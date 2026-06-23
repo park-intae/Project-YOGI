@@ -1,0 +1,18 @@
+{
+  "ENVIRONMENT": "development",
+  "SMARTCHOICE_API_BASE_URL": "https://api.smartchoice.or.kr/v1/plans",
+  "TIMEOUT_MS": 5000,
+  "DATABASE": {
+    "TYPE": "postgres",
+    "PORT": 5432,
+    "SYNC_STRATEGY": "safe_migration"
+  },
+  "TELECOM_MATRIX": {
+    "CARRIER_TYPES": ["MNO_3사", "MVNO_알뜰폰"],
+    "NETWORK_TYPES": ["5G", "LTE"]
+  },
+  "CORE_FLOW": {
+    "SESSION_IDENTIFIER": "input_id",
+    "TIMEZONE_STANDARD": "Asia/Seoul"
+  }
+}

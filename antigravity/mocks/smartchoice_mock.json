@@ -1,0 +1,62 @@
+{
+  "description": "Project YOGI - 스마트초이스 API 연동 및 Software 2.0 회복 탄력성 테스트용 모크 데이터",
+  "mocks": [
+    {
+      "case_id": "MOCK_CASE_01_SUCCESS",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_data": {
+        "total_count": 2,
+        "plans": [
+          {
+            "carrier": "SKT",
+            "plan_name": "5G 다이렉트 45",
+            "network_type": "5G",
+            "base_fee": 45000,
+            "data_allowance_gb": 50,
+            "voice_allowance_min": 9999,
+            "raw_description": "음성 문자 무제한, 데이터 50GB 소진 후 1Mbps 속도제어 제공"
+          },
+          {
+            "carrier": "KT",
+            "plan_name": "초이스 베이직",
+            "network_type": "5G",
+            "base_fee": 90000,
+            "data_allowance_gb": 9999,
+            "voice_allowance_min": 9999,
+            "raw_description": "데이터 완전 무제한 프리미엄 가족결합 가능"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "MOCK_CASE_02_API_SERVER_DOWN",
+      "status": "ERROR",
+      "http_status": 503,
+      "response_data": {
+        "error_code": "SMART_CHOICE_MAINTENANCE",
+        "message": "스마트초이스 오픈 API 서버 정기 점검 중입니다. (00:00 ~ 04:00)",
+        "timestamp": "2026-06-19T01:00:00Z"
+      }
+    },
+    {
+      "case_id": "MOCK_CASE_03_DIRTY_DATA",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_data": {
+        "total_count": 1,
+        "plans": [
+          {
+            "carrier": "LGU_PLUS",
+            "plan_name": "속도 용량 걱정 없는 데이터 하프(MOCK_BUG_DATA)",
+            "network_type": "LTE",
+            "base_fee": "69,000원(부가세포함)", 
+            "data_allowance_gb": "매일5GB+소진시5Mbps",
+            "voice_allowance_min": "집/이동전화 무제한(영상/부가300분)",
+            "raw_description": "스마트초이스에서 이따금 던져주는 파싱하기 까다로운 지저분한 레거시 문자열 포맷 예시"
+          }
+        ]
+      }
+    }
+  ]
+}

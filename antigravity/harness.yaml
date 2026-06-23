@@ -1,0 +1,31 @@
+version: "2.0"
+project: "Project YOGI"
+description: "Data-centric Telecom Plan Recommendation Harness Pipeline"
+
+# 1. 외부 데이터 수집 및 완충 배치 파이프라인
+ingestion_pipeline:
+  cron: "0 4 * * *"
+  step:
+    - name: "Fetch Raw Data"
+      source: "SmartChoice API"
+      target: "db.raw_plan_description"
+      on_failure: "retry_with_backoff"
+      max_retries: 3
+
+    - name: "Data ingestion & Parsing"
+      action: "Extract telecom plans and load into PostgreSQL"
+      validate_schema: true
+      strict_types:
+        timestamp: "TIMESAMPTZ"
+
+# 2. AI 추천 에이전트 평가 및 프롬프트 루프
+evaluation_loop:
+  metrics:
+    - name: "Recommendation Accuracy"
+      threshold: 0.95
+    - name: "Latency"
+      threshold: "2000ms"
+
+  test_harness:
+    mock_data_source: "antigravity/mocks/smartchoice_mock.json"
+    environment_config: "antigravity/config/pipeline_env.json"
