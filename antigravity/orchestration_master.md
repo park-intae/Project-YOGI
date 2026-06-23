@@ -48,8 +48,13 @@
   - 비회원 다형성 세션 저장을 위한 `POST /api/sessions` API, DTO, 트랜잭션, `X-Session-ID` 헤더 검증 가드(`SessionGuard`) 구현 완료
   - 위 세션 저장소 로직에 대한 Vitest 유닛 테스트 완료 및 e2e 테스트 시나리오 작성 완료
 - **중단점 및 다음 작업 (Next Steps)**:
-  - 1. DB 환경 실행(PostgreSQL) 후 `test/sessions.e2e-spec.ts` 100% PASS 검증
-  - 2. `input_id` 기반 AI 추천 조회 API (`GET /api/sessions/:id/recommendations`) 설계 및 프롬프트 주입 연동
+  - [ ] **유저 액션: 로컬 DB(PostgreSQL) 세팅 및 e2e 테스트 통과**
+    - [ ] 1. Docker 또는 로컬에 PostgreSQL(5432 포트) 구동
+    - [ ] 2. `backend/.env`의 `DATABASE_URL` 정보 확인 및 실제 DB와 맞추기
+    - [ ] 3. 터미널(backend 폴더)에서 `npx prisma db push` 실행하여 테이블 생성
+    - [ ] 4. 터미널(backend 폴더)에서 `npm run test:e2e` 실행 후 100% PASS 확인
+  - [ ] **AI 액션: 다음 도메인 개발**
+    - [ ] `input_id` 기반 AI 추천 조회 API (`GET /api/sessions/:id/recommendations`) 설계 및 프롬프트 주입 연동
 
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜

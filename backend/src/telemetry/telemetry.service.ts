@@ -39,6 +39,10 @@ export class TelemetryService {
     // mockCaseId가 환경변수나 파라미터로 제공되지 않았다면 환경변수 MOCK_CASE에서 읽어옴
     const targetCaseId = mockCaseId || process.env.MOCK_CASE || 'MOCK_CASE_01_SUCCESS';
 
+    // TODO: [추후 실제 스마트초이스 API 연동 위치]
+    // 현재는 파이프라인 검증을 위해 로컬 Mock JSON 파일을 읽어서 처리하지만,
+    // 실제 운영 시에는 이 부분을 axios 또는 NestJS HttpService를 이용한 스마트초이스 API HTTP 요청으로 교체해야 합니다.
+    
     // 1. mock 데이터 로드
     const mockFilePath = path.join(process.cwd(), '../antigravity/mocks/smartchoice_mock.json');
     if (!fs.existsSync(mockFilePath)) {
