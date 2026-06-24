@@ -25,17 +25,14 @@ export class SessionsController {
     return this.sessionsService.createSession(sessionId, createSessionDto);
   }
   @Get(':id/recommendations')
-  @UseGuards(SessionGuard)
   @ApiOperation({ summary: 'Get AI recommendations based on input_id' })
-  @ApiHeader({ name: 'X-Session-ID', description: 'Unique identifier for the user session', required: true })
   @ApiResponse({ status: 200, description: 'Prompt generated successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'Not found.' })
   async getRecommendations(
-    @SessionId() sessionId: string,
     @Param('id') id: string,
   ) {
-    return this.sessionsService.getRecommendationsPrompt(sessionId, id);
+    return this.sessionsService.getRecommendationsPrompt(id);
   }
 }

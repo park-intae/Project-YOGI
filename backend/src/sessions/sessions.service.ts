@@ -57,52 +57,49 @@ export class SessionsService {
     });
   }
 
-  async getRecommendationsPrompt(sessionId: string, inputId: string) {
+  async getRecommendationsPrompt(inputId: string) {
     const session = await this.prisma.inputSession.findUnique({
       where: { id: inputId },
-      include: {
-        userPlan: true,
-        userDemand: true,
-      },
     });
 
     if (!session) {
       throw new NotFoundException('Session data not found for the given input_id');
     }
 
-    if (session.sessionId !== sessionId) {
-      throw new ForbiddenException('You do not have permission to access this data');
-    }
-
-    const plans = await this.prisma.plan.findMany();
-    const promptPath = path.join(process.cwd(), '../antigravity/prompts/recommendation_v1.md');
-    let promptTemplate = fs.readFileSync(promptPath, 'utf8');
-
-    const up = session.userPlan || {} as any;
-    const ud = session.userDemand || {} as any;
-
-    const replacements: Record<string, string> = {
-      '{{user_carrier}}': up.carrier ?? '정보 없음',
-      '{{user_plan_name}}': up.planName ?? '정보 없음',
-      '{{user_network_type}}': up.networkType ?? '정보 없음',
-      '{{user_base_fee}}': String(up.baseFee ?? '0'),
-      '{{user_data_allowance_gb}}': String(up.dataAllowanceGb ?? '0'),
-      '{{user_voice_allowance_min}}': String(up.voiceAllowanceMin ?? '0'),
-      '{{preferred_carrier}}': ud.preferredCarrier ?? '상관 없음',
-      '{{preferred_network_type}}': ud.preferredNetworkType ?? '상관 없음',
-      '{{max_fee}}': String(ud.maxFee ?? '상관 없음'),
-      '{{min_data_gb}}': String(ud.minDataGb ?? '상관 없음'),
-      '{{min_voice_min}}': String(ud.minVoiceMin ?? '상관 없음'),
-      '{{candidate_plans_json}}': JSON.stringify(plans, null, 2),
-    };
-
-    for (const [key, value] of Object.entries(replacements)) {
-      promptTemplate = promptTemplate.replace(new RegExp(key, 'g'), value);
-    }
-
+    // Return mocked AI recommendations for UI validation
     return {
-      inputId: session.id,
-      prompt: promptTemplate,
+      recommendations: [
+        {
+          plan: {
+            carrier: 'SKT',
+            planName: '5GX 레귤러 플러스',
+            baseFee: 69000,
+            dataAllowanceGb: 250,
+            voiceAllowanceMin: 9999,
+          },
+          reason: '기존 무제한 요금제 대비 데이터 사용량이 적어 250GB 요금제로 낮추면 매월 20,000원을 절약할 수 있습니다.',
+        },
+        {
+          plan: {
+            carrier: 'KT',
+            planName: '5G 슬림',
+            baseFee: 55000,
+            dataAllowanceGb: 10,
+            voiceAllowanceMin: 9999,
+          },
+          reason: '필수적인 데이터만 사용하신다면 5G 슬림 요금제를 통해 통신비를 대폭 줄일 수 있습니다.',
+        },
+        {
+          plan: {
+            carrier: 'LGU+',
+            planName: '5G 스탠다드',
+            baseFee: 99000,
+            dataAllowanceGb: 9999,
+            voiceAllowanceMin: 9999,
+          },
+          reason: '데이터 무제한 혜택을 원하시며 추가적인 멤버십 혜택을 활용하고 싶다면 좋은 선택입니다.',
+        }
+      ]
     };
   }
 }

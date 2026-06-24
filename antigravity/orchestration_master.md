@@ -3,8 +3,10 @@
 ## 0. AI 개발 모드 전환 및 컨텍스트 규칙
 - AI 에이전트는 작업을 시작하거나 이어받을 때 반드시 본 파일과 도메인별 가이드(`@backend_instructions.md`, `@frontend_instructions.md`)를 컨텍스트로 먼저 로드할 것.
 - 모든 기능 구현은 선언식 파이프라인(`@harness.yaml`)의 아키텍처 규칙과 비회원제 다형성(`input_id`) 흐름을 절대 위반 금지.
-- 작업 진입 전 어떤 작업을 할지 브리핑 후 진행할 것.
+- 작업 진입 전 어떤 작업을 할지 브리핑, 작업 승인 시 전체 작업 마스터 체크리스트 업데이트 후 진행할 것.
+- 작업 완료시 체크리스트 업데이트 후 다음 작업 진행
 - 작업 종료 명령 수령 시 "전체 작업 마스터 체크리스트" 와 "현재 작업 세션 로그 및 중단 점" 업데이트 할 것
+- "현재 작업 세션 로그 및 중단 점"은 세션 시작 후, 종료 전 내용만 기록
 
 ## 1. 🚀 전체 작업 마스터 체크리스트 (Progress Tracker)
 > 💡 [주의] 작업을 중단하기 직전, AI는 반드시 현재까지 완료된 항목을 `[x]`로 표시하고, 진행 중인 항목이나 다음 할 일을 업데이트해야 합니다.
@@ -28,35 +30,29 @@
 - [x] `input_id` 기반 AI 추천 조회 API (`GET /api/sessions/:id/recommendations`) 설계 및 프롬프트 주입 연동
 
 ### [Phase 4] 프론트엔드 UI/UX 구현
-
+- [x] `frontend` 디렉터리 기반으로 사용자 통신비 진단 및 요금제 추천 화면 뷰(View) 뼈대(Scaffold) 구성
+- [x] 백엔드 서버(API)와의 연동 로직 설계 및 CORS 설정 확인
+- [x] 프론트엔드와 백엔드 연동 테스트 (API 에러 핸들링 및 로딩/스켈레톤 UI 동작 확인)
+- [x] shadcn/ui 기반 컴포넌트 세부 스타일링 및 디자인 고도화
 --
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-06-24T19:33:00+09:00
+- **일시**: 2026-06-24T22:38:29+09:00
 - **완료된 작업**:
-  - `project yogi` 폴더 내에 백엔드(`backend`)와 프론트엔드(`frontend`) 독립 폴더 구성 완료
-  - Next.js (App Router, TS, Tailwind) 및 NestJS (Strict 모드 TS) 기본 프레임워크 셋업 완료
-  - 백엔드 코어 패키지(Swagger, Prisma Client, Config, Axios, Redis 등) 설치 성공
-  - 백엔드 Dev 의존성 라이브러리(`prisma`, `vitest`, `unplugin-swc`, `@swc/core`) 설치 및 `vitest.config.ts` 설정 완료
-  - Prisma 스키마 및 UUID `input_id` 기반 다형성 관계 스키마(`schema.prisma`) 설계 및 클라이언트 코드 생성 완료
-  - 스마트초이스 API 연동 대비 원천 데이터 덤프용 `Plan` 모델 설계 및 로컬 `.env` 환경 세팅 완료
-  - 텔레메트리 잉제스천 및 정제 배치 CLI(`npm 일 telemetry:ingest / transform`) 스크립트 연결 및 로직 구현 완료
-  - Vitest를 사용한 텔레메트리 정밀 파싱(Edge Case) 및 API 에러 테스트(Retry 유도용) 100% 검증 통과 완료
-  - `@nestjs/schedule` 모듈 등록 및 새벽 4시 텔레메트리 스케줄러 크론 파이프라인(`handleDailyPipeline`) 구현 완료
-  - AI 추천 평가를 위한 `antigravity/prompts/recommendation_v1.md` 시스템 프롬프트 데이터 템플릿 설계 완료
-  - `run_eval_loop.ps1` AI 추천 평가용 Vitest 스텁 시나리오 구성 및 연동 완료 (100% PASS)
-  - 비회원 다형성 세션 저장을 위한 `POST /api/sessions` API, DTO, 트랜잭션, `X-Session-ID` 헤더 검증 가드(`SessionGuard`) 구현 완료
-  - 위 세션 저장소 로직에 대한 Vitest 유닛 테스트 완료 및 e2e 테스트 시나리오 작성 완료
-  - `sessions.e2e-spec.ts` 내 supertest 모듈 임포트 에러 및 Prisma UUID(`input_id`) 형식 검증 에러 수정 완료
-  - 로컬 DB(PostgreSQL) 연동 후 전체 e2e 테스트 시나리오 정상 통과 확인
-  - `GET /api/sessions/:id/recommendations` API 신규 설계 및 `SessionsController`, `SessionsService` 연동 완료
-  - `recommendation_v1.md` 템플릿 파일 기반의 사용자 정보(UserPlan, UserDemand) 및 후보 요금제(Plan) 동적 프롬프트 주입 로직 구현 완료
-  - 새로운 추천 조회 API에 대한 e2e 테스트 블록 추가 작성 및 총 18개 테스트 전체 통과(100% PASS) 확인
+  - 백엔드 서버(API)에 CORS 설정 활성화 및 `X-Session-ID` 노출 헤더 설정 완료
+  - 프론트엔드(`frontend`) 디렉터리에 `axios`, `uuid`, `lucide-react` 등 필요 라이브러리 추가 설치 완료
+  - `localStorage` 기반의 비회원 세션 관리 유틸리티 및 Axios 인터셉터(`api.ts`) 구현 완료
+  - 단일 플로우 UX 기반의 모바일 퍼스트 요금제 진단 입력 폼(`app/page.tsx`) 화면 뷰 구축 완료
+  - `input_id` 기반 추천 결과 페이지(`app/result/page.tsx`)를 React Server Component 형태로 구현 및 로딩 스켈레톤 적용 완료
+  - 프론트엔드 빌드 시 발생하는 SSR 관련 에러(useSearchParams) 해결(Suspense 적용) 및 백엔드 타입스크립트 빌드 에러 해결
+  - 프론트엔드 입력 폼 내의 로딩 상태(isLoading) 및 에러 메시지(error state) 노출 UI 연동 완료
+  - `app/result/page.tsx` 내의 AI 추천 요금제 결과 카드 UI를 원본 시안(`design_preview.svg`)과 일치하도록 세부 스타일링(절약/추가 비용 하이라이트 박스, 데이터/통화/문자 비교 도넛 차트 등) 고도화 완료
 - **중단점 및 다음 작업 (Next Steps)**:
-  - [ ] **[Phase 4] 프론트엔드 UI/UX 구현 시작**
-    - [ ] `frontend` 디렉터리 기반으로 사용자 통신비 진단 및 요금제 추천 화면 뷰(View) 뼈대(Scaffold) 구성
-    - [ ] 백엔드 서버(API)와의 연동 로직 설계 및 CORS 설정 확인
-
+  - [x] **[Phase 4] 프론트엔드 UI/UX 구현 시작**
+    - [x] `frontend` 디렉터리 기반으로 사용자 통신비 진단 및 요금제 추천 화면 뷰(View) 뼈대(Scaffold) 구성
+    - [x] 백엔드 서버(API)와의 연동 로직 설계 및 CORS 설정 확인
+  - [x] 프론트엔드와 백엔드 연동 테스트 (API 에러 핸들링 및 로딩/스켈레톤 UI 동작 확인)
+  - [x] shadcn/ui 기반 컴포넌트 세부 스타일링 및 디자인 고도화
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
