@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiHeader, ApiResponse } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -23,5 +23,19 @@ export class SessionsController {
     @Body() createSessionDto: CreateSessionDto,
   ) {
     return this.sessionsService.createSession(sessionId, createSessionDto);
+  }
+  @Get(':id/recommendations')
+  @UseGuards(SessionGuard)
+  @ApiOperation({ summary: 'Get AI recommendations based on input_id' })
+  @ApiHeader({ name: 'X-Session-ID', description: 'Unique identifier for the user session', required: true })
+  @ApiResponse({ status: 200, description: 'Prompt generated successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 404, description: 'Not found.' })
+  async getRecommendations(
+    @SessionId() sessionId: string,
+    @Param('id') id: string,
+  ) {
+    return this.sessionsService.getRecommendationsPrompt(sessionId, id);
   }
 }

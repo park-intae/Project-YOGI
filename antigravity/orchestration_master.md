@@ -25,14 +25,14 @@
 ### [Phase 3] 백엔드 코어 도메인 개발
 - [x] 비회원 다형성 세션 저장을 위한 `InputSession`, `UserPlan`, `UserDemand` 트랜잭션 API (`POST /api/sessions`) 구현 및 DTO 매핑
 - [x] 세션 검증을 위한 요청 헤더(`X-Session-ID`) 미들웨어/인터셉터 설계
-- [ ] `input_id` 기반 AI 추천 조회 API (`GET /api/sessions/:id/recommendations`) 설계 및 프롬프트 주입 연동
+- [x] `input_id` 기반 AI 추천 조회 API (`GET /api/sessions/:id/recommendations`) 설계 및 프롬프트 주입 연동
 
 ### [Phase 4] 프론트엔드 UI/UX 구현
 
 --
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-06-24T00:15:00+09:00
+- **일시**: 2026-06-24T19:33:00+09:00
 - **완료된 작업**:
   - `project yogi` 폴더 내에 백엔드(`backend`)와 프론트엔드(`frontend`) 독립 폴더 구성 완료
   - Next.js (App Router, TS, Tailwind) 및 NestJS (Strict 모드 TS) 기본 프레임워크 셋업 완료
@@ -47,14 +47,15 @@
   - `run_eval_loop.ps1` AI 추천 평가용 Vitest 스텁 시나리오 구성 및 연동 완료 (100% PASS)
   - 비회원 다형성 세션 저장을 위한 `POST /api/sessions` API, DTO, 트랜잭션, `X-Session-ID` 헤더 검증 가드(`SessionGuard`) 구현 완료
   - 위 세션 저장소 로직에 대한 Vitest 유닛 테스트 완료 및 e2e 테스트 시나리오 작성 완료
+  - `sessions.e2e-spec.ts` 내 supertest 모듈 임포트 에러 및 Prisma UUID(`input_id`) 형식 검증 에러 수정 완료
+  - 로컬 DB(PostgreSQL) 연동 후 전체 e2e 테스트 시나리오 정상 통과 확인
+  - `GET /api/sessions/:id/recommendations` API 신규 설계 및 `SessionsController`, `SessionsService` 연동 완료
+  - `recommendation_v1.md` 템플릿 파일 기반의 사용자 정보(UserPlan, UserDemand) 및 후보 요금제(Plan) 동적 프롬프트 주입 로직 구현 완료
+  - 새로운 추천 조회 API에 대한 e2e 테스트 블록 추가 작성 및 총 18개 테스트 전체 통과(100% PASS) 확인
 - **중단점 및 다음 작업 (Next Steps)**:
-  - [ ] **유저 액션: 로컬 DB(PostgreSQL) 세팅 및 e2e 테스트 통과**
-    - [ ] 1. Docker 또는 로컬에 PostgreSQL(5432 포트) 구동
-    - [ ] 2. `backend/.env`의 `DATABASE_URL` 정보 확인 및 실제 DB와 맞추기
-    - [ ] 3. 터미널(backend 폴더)에서 `npx prisma db push` 실행하여 테이블 생성
-    - [ ] 4. 터미널(backend 폴더)에서 `npm run test:e2e` 실행 후 100% PASS 확인
-  - [ ] **AI 액션: 다음 도메인 개발**
-    - [ ] `input_id` 기반 AI 추천 조회 API (`GET /api/sessions/:id/recommendations`) 설계 및 프롬프트 주입 연동
+  - [ ] **[Phase 4] 프론트엔드 UI/UX 구현 시작**
+    - [ ] `frontend` 디렉터리 기반으로 사용자 통신비 진단 및 요금제 추천 화면 뷰(View) 뼈대(Scaffold) 구성
+    - [ ] 백엔드 서버(API)와의 연동 로직 설계 및 CORS 설정 확인
 
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜

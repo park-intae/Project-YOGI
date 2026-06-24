@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 
@@ -45,13 +45,13 @@ describe('SessionsController (e2e)', () => {
   it('/api/sessions (POST) - should fail if body has neither userPlan nor userDemand', () => {
     return request(app.getHttpServer())
       .post('/api/sessions')
-      .set('X-Session-ID', 'test-session-123')
+      .set('X-Session-ID', '123e4567-e89b-12d3-a456-426614174000')
       .send({})
       .expect(400);
   });
 
   it('/api/sessions (POST) - should create session with userPlan and userDemand', async () => {
-    const sessionId = 'test-session-123';
+    const sessionId = '123e4567-e89b-12d3-a456-426614174000';
     const response = await request(app.getHttpServer())
       .post('/api/sessions')
       .set('X-Session-ID', sessionId)
@@ -77,5 +77,36 @@ describe('SessionsController (e2e)', () => {
     expect(response.body.userPlan.carrier).toBe('SKT');
     expect(response.body.userDemand).toBeDefined();
     expect(response.body.userDemand.preferredCarrier).toBe('KT');
+  });
+
+  it('/api/sessions/:id/recommendations (GET) - should generate prompt based on session', async () => {
+    const sessionId = '123e4567-e89b-12d3-a456-426614174000';
+    // Create a session first to ensure we have a valid input_id
+    const createRes = await request(app.getHttpServer())
+      .post('/api/sessions')
+      .set('X-Session-ID', sessionId)
+      .send({
+        userPlan: {
+          carrier: 'LG',
+          planName: 'LTE 기본',
+          networkType: 'LTE',
+          baseFee: 33000,
+          dataAllowanceGb: 5,
+          voiceAllowanceMin: 100,
+        }
+      });
+    
+    const inputId = createRes.body.id;
+
+    const response = await request(app.getHttpServer())
+      .get(`/api/sessions/${inputId}/recommendations`)
+      .set('X-Session-ID', sessionId)
+      .expect(200);
+
+    expect(response.body).toHaveProperty('prompt');
+    expect(response.body.inputId).toBe(inputId);
+    // Check if the prompt includes the injected values
+    expect(response.body.prompt).toContain('LG');
+    expect(response.body.prompt).toContain('LTE 기본');
   });
 });
