@@ -38,7 +38,7 @@ export default function DiagnosticForm() {
           voiceAllowanceMin: voiceAllowanceMin === '무제한' ? 9999 : Number(voiceAllowanceMin),
         }
       });
-      router.push(`/result?input_id=${response.id}`);
+      router.push(`/?input_id=${response.id}`);
     } catch (error: any) {
       console.error('Failed to create session:', error);
       setError(error.response?.data?.message || '서버 통신에 실패했습니다. 다시 시도해주세요.');

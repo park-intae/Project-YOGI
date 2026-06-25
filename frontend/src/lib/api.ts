@@ -63,12 +63,12 @@ export interface RecommendationResponseDto {
 
 export const yogiApi = {
   createSession: async (data: CreateSessionDto): Promise<SessionResponseDto> => {
-    const response = await apiClient.post<SessionResponseDto>('/sessions', data);
+    const response = await apiClient.post<SessionResponseDto>('/v1/recommandations', data);
     return response.data;
   },
   
   getRecommendations: async (inputId: string): Promise<RecommendationResponseDto> => {
-    const response = await apiClient.get<RecommendationResponseDto>(`/sessions/${inputId}/recommendations`);
+    const response = await apiClient.get<RecommendationResponseDto>(`/v1/recommendations/${inputId}`);
     return response.data;
   }
 };

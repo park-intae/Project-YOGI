@@ -46,5 +46,11 @@
 
 ## 7. 가볍고 명확한 아키텍처 (Anti-Overengineering)
 - **도메인 복잡도 통제**:
-  - 프로젝트의 규모와 비회원제 로그 중심의 특성을 고려하여, 지나치게 거대한 DDD(Domain-Driven Design)나 클린 아키텍처식 7단계 레이어 분리는 지양함. 
   - NestJS 표준 아키텍처인 `Controller - Service - Repository(prisma)` 의 3계층 구조를 칼같이 유지하되, AI가 독단적으로 모듈 구조를 파편화하지 않도록 통제할 것.
+
+## 8. [Phase 5] 리팩토링 체크리스트 (API_명세서 기준)
+- [x] `sessions` 모듈을 `recommendations` 및 `plans` 역할에 맞게 분리 또는 이름 변경
+- [x] AI 추천 요청 API 엔드포인트를 `POST /api/v1/recommandations` 로 수정
+- [x] AI 추천 단건 조회 API 엔드포인트를 `GET /api/v1/recommendations/:input_id` 로 수정
+- [ ] 요금제 목록 및 상세 조회 API `GET /api/v1/plans` 추가 (선택사항, 스펙 확인용)
+- [x] 컨트롤러와 서비스의 메서드 네이밍을 API 스펙에 맞게 정렬

@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SessionsService } from './sessions.service';
+import { RecommendationsService } from './recommendations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-describe('SessionsService', () => {
-  let service: SessionsService;
+describe('RecommendationsService', () => {
+  let service: RecommendationsService;
   let prisma: PrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        SessionsService,
+        RecommendationsService,
         {
           provide: PrismaService,
           useValue: {
@@ -21,7 +21,7 @@ describe('SessionsService', () => {
       ],
     }).compile();
 
-    service = module.get<SessionsService>(SessionsService);
+    service = module.get<RecommendationsService>(RecommendationsService);
     prisma = module.get<PrismaService>(PrismaService);
   });
 

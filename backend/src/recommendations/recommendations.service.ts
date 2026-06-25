@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
-export class SessionsService {
+export class RecommendationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createSession(sessionId: string, dto: CreateSessionDto) {
@@ -98,6 +98,26 @@ export class SessionsService {
             voiceAllowanceMin: 9999,
           },
           reason: '데이터 무제한 혜택을 원하시며 추가적인 멤버십 혜택을 활용하고 싶다면 좋은 선택입니다.',
+        },
+        {
+          plan: {
+            carrier: 'SKT',
+            planName: '5GX 베이직',
+            baseFee: 49000,
+            dataAllowanceGb: 8,
+            voiceAllowanceMin: 9999,
+          },
+          reason: '데이터 사용량이 매우 적은 달을 위한 최소 비용 요금제입니다.',
+        },
+        {
+          plan: {
+            carrier: '알뜰폰',
+            planName: '실속 무제한 11GB+',
+            baseFee: 33000,
+            dataAllowanceGb: 11,
+            voiceAllowanceMin: 9999,
+          },
+          reason: '통신사 결합 할인이 필요 없다면 알뜰폰으로 최대의 가성비를 챙길 수 있습니다.',
         }
       ]
     };

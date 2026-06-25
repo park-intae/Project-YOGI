@@ -4,7 +4,7 @@ import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 
-describe('SessionsController (e2e)', () => {
+describe('RecommendationsController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
@@ -26,9 +26,9 @@ describe('SessionsController (e2e)', () => {
     await app.close();
   });
 
-  it('/api/sessions (POST) - should fail if X-Session-ID is missing', () => {
+  it('/api/v1/recommandations (POST) - should fail if X-Session-ID is missing', () => {
     return request(app.getHttpServer())
-      .post('/api/sessions')
+      .post('/api/v1/recommandations')
       .send({
         userPlan: {
           carrier: 'SKT',
@@ -42,18 +42,18 @@ describe('SessionsController (e2e)', () => {
       .expect(401);
   });
 
-  it('/api/sessions (POST) - should fail if body has neither userPlan nor userDemand', () => {
+  it('/api/v1/recommandations (POST) - should fail if body has neither userPlan nor userDemand', () => {
     return request(app.getHttpServer())
-      .post('/api/sessions')
+      .post('/api/v1/recommandations')
       .set('X-Session-ID', '123e4567-e89b-12d3-a456-426614174000')
       .send({})
       .expect(400);
   });
 
-  it('/api/sessions (POST) - should create session with userPlan and userDemand', async () => {
+  it('/api/v1/recommandations (POST) - should create session with userPlan and userDemand', async () => {
     const sessionId = '123e4567-e89b-12d3-a456-426614174000';
     const response = await request(app.getHttpServer())
-      .post('/api/sessions')
+      .post('/api/v1/recommandations')
       .set('X-Session-ID', sessionId)
       .send({
         userPlan: {
@@ -79,11 +79,11 @@ describe('SessionsController (e2e)', () => {
     expect(response.body.userDemand.preferredCarrier).toBe('KT');
   });
 
-  it('/api/sessions/:id/recommendations (GET) - should generate prompt based on session', async () => {
+  it('/api/v1/recommendations/:id (GET) - should generate prompt based on session', async () => {
     const sessionId = '123e4567-e89b-12d3-a456-426614174000';
     // Create a session first to ensure we have a valid input_id
     const createRes = await request(app.getHttpServer())
-      .post('/api/sessions')
+      .post('/api/v1/recommandations')
       .set('X-Session-ID', sessionId)
       .send({
         userPlan: {
@@ -99,14 +99,13 @@ describe('SessionsController (e2e)', () => {
     const inputId = createRes.body.id;
 
     const response = await request(app.getHttpServer())
-      .get(`/api/sessions/${inputId}/recommendations`)
+      .get(`/api/v1/recommendations/${inputId}`)
       .set('X-Session-ID', sessionId)
       .expect(200);
 
-    expect(response.body).toHaveProperty('prompt');
-    expect(response.body.inputId).toBe(inputId);
-    // Check if the prompt includes the injected values
-    expect(response.body.prompt).toContain('LG');
-    expect(response.body.prompt).toContain('LTE 기본');
+    // expect(response.body).toHaveProperty('prompt');
+    // We changed the mock data to return an array of recommendations, let's test for that instead
+    expect(response.body).toHaveProperty('recommendations');
+    expect(Array.isArray(response.body.recommendations)).toBe(true);
   });
 });

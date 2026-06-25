@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
-import { SessionsModule } from './sessions/sessions.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { SessionsModule } from './sessions/sessions.module';
     ScheduleModule.forRoot(),
     PrismaModule,
     TelemetryModule,
-    SessionsModule,
+    RecommendationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

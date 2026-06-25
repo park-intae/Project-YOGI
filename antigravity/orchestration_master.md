@@ -34,25 +34,24 @@
 - [x] 백엔드 서버(API)와의 연동 로직 설계 및 CORS 설정 확인
 - [x] 프론트엔드와 백엔드 연동 테스트 (API 에러 핸들링 및 로딩/스켈레톤 UI 동작 확인)
 - [x] shadcn/ui 기반 컴포넌트 세부 스타일링 및 디자인 고도화
+
+### [Phase 5] 기획에 따라 수정
+- [x] `plan` 디렉터리 내부 파일 확인 후 현재 코드에 잘못 반영되거나 반영되지 않은 부분 확인
+- [x] 수정해야 할 요소의 성격에 따라 `backend_instruction.md`, `frontend-instruction.md`에 체크리스트로 적용
+- [x] 백엔드부터 체크리스트에 따라 수정
 --
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-06-24T22:38:29+09:00
+- **일시**: 2026-06-26T00:51:46+09:00
 - **완료된 작업**:
-  - 백엔드 서버(API)에 CORS 설정 활성화 및 `X-Session-ID` 노출 헤더 설정 완료
-  - 프론트엔드(`frontend`) 디렉터리에 `axios`, `uuid`, `lucide-react` 등 필요 라이브러리 추가 설치 완료
-  - `localStorage` 기반의 비회원 세션 관리 유틸리티 및 Axios 인터셉터(`api.ts`) 구현 완료
-  - 단일 플로우 UX 기반의 모바일 퍼스트 요금제 진단 입력 폼(`app/page.tsx`) 화면 뷰 구축 완료
-  - `input_id` 기반 추천 결과 페이지(`app/result/page.tsx`)를 React Server Component 형태로 구현 및 로딩 스켈레톤 적용 완료
-  - 프론트엔드 빌드 시 발생하는 SSR 관련 에러(useSearchParams) 해결(Suspense 적용) 및 백엔드 타입스크립트 빌드 에러 해결
-  - 프론트엔드 입력 폼 내의 로딩 상태(isLoading) 및 에러 메시지(error state) 노출 UI 연동 완료
-  - `app/result/page.tsx` 내의 AI 추천 요금제 결과 카드 UI를 원본 시안(`design_preview.svg`)과 일치하도록 세부 스타일링(절약/추가 비용 하이라이트 박스, 데이터/통화/문자 비교 도넛 차트 등) 고도화 완료
+  - **[Phase 5]** 기획서(`API_명세서.pdf`, `요구사항_명세서.pdf`) 기준 백엔드/프론트엔드 구조 리팩토링 완료
+  - 백엔드 모듈 분리 및 API 라우트(`/api/v1/recommandations` 등) 스펙 일치화 완료
+  - 프론트엔드 단일 페이지 UX 통합(`/result` 라우트 제거 후 조건부 렌더링 방식 변경) 및 `RecommendationList` 구현
+  - "다른 요금제 더 보기" 동적 확장 UI 구현 및 백엔드 임시 Mock Data를 5개로 늘려 UI 렌더링 검증 완료
+  - 루트 폴더 `package.json`에 일괄 빌드를 위한 `build`, `build:backend`, `build:frontend` 스크립트 추가
 - **중단점 및 다음 작업 (Next Steps)**:
-  - [x] **[Phase 4] 프론트엔드 UI/UX 구현 시작**
-    - [x] `frontend` 디렉터리 기반으로 사용자 통신비 진단 및 요금제 추천 화면 뷰(View) 뼈대(Scaffold) 구성
-    - [x] 백엔드 서버(API)와의 연동 로직 설계 및 CORS 설정 확인
-  - [x] 프론트엔드와 백엔드 연동 테스트 (API 에러 핸들링 및 로딩/스켈레톤 UI 동작 확인)
-  - [x] shadcn/ui 기반 컴포넌트 세부 스타일링 및 디자인 고도화
+  - 프론트/백엔드 기본 연동 및 UI 동작까지는 확인되었으므로, 이후 **실제 데이터베이스 로직 고도화** 및 **외부 API(스마트초이스 등) 또는 실제 AI 추천 프롬프트 연동** 진행 필요.
+  - 본 문서 하단의 **[QA/Test 검증 프로토콜]** 에 따른 Vitest/Supertest 테스트 코드 작성 진입 예정.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
