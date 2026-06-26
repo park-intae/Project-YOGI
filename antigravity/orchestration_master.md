@@ -49,23 +49,25 @@
 - [x] 스마트초이스 외부 API 연동 및 네트워크 장애 대비 로직 고도화
 - [x] 실제 생성형 AI(LLM) 프롬프트 연동 및 추천 결과 JSON 파싱
 - [x] 프롬프트 컨텍스트(사용자 요금제 비교) 최적화
+### [Phase 8] UI/UX 폴리싱 및 디자인 시안 완벽 반영
+- [x] 프론트엔드 SSR(Server Component) 환경에서 발생하는 `X-Session-ID` 헤더 누락 버그 해결 (클라이언트 컴포넌트로 분리)
+- [x] `UI_디자인_및_ERD.pdf` 시안을 완벽 반영하여 추가 추천 요금제 목록을 콤팩트한 가로 리스트(Row) 형태로 전면 개편
+- [x] 추천 요금제 리스트에 데이터/통화/문자 미니 도넛 차트 도입 및 UI 요소 스케일업(크기/여백/폰트 확대)
+- [x] 추천 기준 안내 모달을 팝오버(Popover) 방식으로 변경하여 흐름 단절 해결 및 팝오버 사이즈/가독성 개선
+- [x] [자세히 보기] 버튼을 실제 요금제 URL로 이동하는 하이퍼링크(`<a href>`)로 변경 (`plan_url` DTO 속성 추가)
 --
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-06-26T22:38:00+09:00
+- **일시**: 2026-06-26T23:40:00+09:00
 - **완료된 작업**:
-  - **[Phase 6]** DB Schema 최적화 및 Telemetry Upsert / Dead Letter 로깅 구현 완료.
-  - **[Phase 7]** 백엔드에 `@google/generative-ai` 모듈 설치 및 `RecommendationsService` 내 LLM 추천 로직 구현 완료.
-  - **[Phase 7]** `@antigravity/prompts/recommendation_v1.md` 로드 및 컨텍스트 매핑, JSON Schema 기반 Structured Output 적용 완료.
-  - **[Refactor]** `API_명세서.pdf` 스펙과 불일치하던 기존 DTO(`userPlan`, `userDemand`)를 기획서 스펙(`current_plan`, `demand_condition`, `input_type` 등)에 맞게 100% 리팩토링 완료.
-  - **[Refactor]** 누락되었던 **API 1-1. 요금제 전체 및 필터 조회(`GET /api/v1/plans`)** 엔드포인트 구현 완료.
-  - **[BugFix]** 최신 `@google/generative-ai` 버전의 `SchemaType` 변경에 따른 TypeScript 에러(`TS2305`) 해결 완료.
-  - 백엔드 E2E 및 단위 테스트(`npm run test`) 실행하여 23/23 `PASS` 확인.
-  - **[Frontend]** 리팩토링된 백엔드 DTO(`current_plan`, `demand_condition` 등) 및 `RecommendedPlanDto`에 맞게 프론트엔드 API 클라이언트(`src/lib/api.ts`) 및 UI 컴포넌트(`DiagnosticForm.tsx`, `RecommendationCard.tsx`, `page.tsx`) 전면 수정 완료.
-  - 프론트엔드 단위 컴포넌트 테스트(`npm run test`) 실행하여 11/11 `PASS` 확인.
+  - **[BugFix]** Next.js Server Component 환경에서 백엔드로 `X-Session-ID` 헤더가 전달되지 않는 문제를 해결하기 위해 `RecommendationContent`를 Client Component로 분리 완료.
+  - **[UI/UX]** `UI_디자인_및_ERD.pdf` 원본 시안을 기반으로 '추가 추천 요금제' 디자인 전면 수정 (원형 미니 차트 추가, 가로 배치, 여백 및 폰트 크기 확대).
+  - **[UI/UX]** AI 추천 기준 안내 버튼을 화면을 가리는 모달에서 자연스러운 팝오버(Popover) 형태로 변경.
+  - **[Feature]** 프론트엔드 및 백엔드 DTO에 `plan_url`을 추가하고, '자세히 보기' 버튼 클릭 시 해당 URL로 외부 이동하도록 하이퍼링크 처리.
+  - 프론트엔드 단위/UI 컴포넌트 테스트(`vitest`) 11/11 `PASS` 재검증 완료.
 - **중단점 및 다음 작업 (Next Steps)**:
-  - 프론트엔드와 백엔드가 `API_명세서.pdf` 스펙을 기준으로 자동화 테스트(Vitest, Supertest) 상에서는 완벽하게 연동 및 통과되었습니다.
-  - **다음 진행 여부 결정 필요**: 브라우저 기반의 실제 E2E 동작 테스트를 사용자가 직접 구동(`npm run dev`)하여 확인할 것인지, Playwright 등을 도입하여 헤드리스 브라우저 기반 자동화 통합 테스트 코드를 작성할 것인지 선택해야 합니다.
+  - 브라우저 상에서의 모든 UI 디자인 반영과 백엔드 연동이 사용자의 수동 검증을 통해 성공적으로 확인되었습니다.
+  - 다음 기능 개발(추가 필터링, 정렬, 마이페이지 등)로 넘어갈지, 혹은 클라우드 배포(Vercel/AWS)를 진행할지 결정이 필요합니다.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
