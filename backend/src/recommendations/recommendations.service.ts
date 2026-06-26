@@ -1,12 +1,25 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
+import { ConfigService } from '@nestjs/config';
+import { GoogleGenerativeAI, Schema, Type } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class RecommendationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(RecommendationsService.name);
+  private genAI: GoogleGenerativeAI;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    if (apiKey) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+    }
+  }
 
   async createSession(sessionId: string, dto: CreateSessionDto) {
     if (!dto.userPlan && !dto.userDemand) {
@@ -57,9 +70,37 @@ export class RecommendationsService {
     });
   }
 
+  private async getCandidatePlans(demand: any, limit = 15) {
+    const where: any = { baseFee: { gt: 0 } };
+    
+    if (demand?.maxFee) where.baseFee = { ...where.baseFee, lte: demand.maxFee };
+    if (demand?.minDataGb) where.dataAllowanceGb = { gte: demand.minDataGb };
+    if (demand?.minVoiceMin) where.voiceAllowanceMin = { gte: demand.minVoiceMin };
+    if (demand?.preferredCarrier) where.carrier = demand.preferredCarrier;
+    if (demand?.preferredNetworkType) where.networkType = demand.preferredNetworkType;
+
+    return this.prisma.plan.findMany({
+      where,
+      orderBy: { baseFee: 'asc' },
+      take: limit,
+      select: {
+        id: true,
+        carrier: true,
+        planName: true,
+        baseFee: true,
+        dataAllowanceGb: true,
+        voiceAllowanceMin: true,
+      }
+    });
+  }
+
   async getRecommendationsPrompt(inputId: string, sessionId: string) {
     const session = await this.prisma.inputSession.findUnique({
       where: { id: inputId },
+      include: {
+        userPlan: true,
+        userDemand: true,
+      }
     });
 
     if (!session) {
@@ -70,8 +111,10 @@ export class RecommendationsService {
       throw new ForbiddenException('Forbidden. Session ID mismatch.');
     }
 
-    // Return mocked AI recommendations for UI validation
-    return {
+    const candidatePlans = await this.getCandidatePlans(session.userDemand, 10);
+    
+    // Fallback to mock data if no apiKey or AI fails
+    const mockFallback = {
       recommendations: [
         {
           plan: {
@@ -102,28 +145,90 @@ export class RecommendationsService {
             voiceAllowanceMin: 9999,
           },
           reason: '데이터 무제한 혜택을 원하시며 추가적인 멤버십 혜택을 활용하고 싶다면 좋은 선택입니다.',
-        },
-        {
-          plan: {
-            carrier: 'SKT',
-            planName: '5GX 베이직',
-            baseFee: 49000,
-            dataAllowanceGb: 8,
-            voiceAllowanceMin: 9999,
-          },
-          reason: '데이터 사용량이 매우 적은 달을 위한 최소 비용 요금제입니다.',
-        },
-        {
-          plan: {
-            carrier: '알뜰폰',
-            planName: '실속 무제한 11GB+',
-            baseFee: 33000,
-            dataAllowanceGb: 11,
-            voiceAllowanceMin: 9999,
-          },
-          reason: '통신사 결합 할인이 필요 없다면 알뜰폰으로 최대의 가성비를 챙길 수 있습니다.',
         }
       ]
     };
+
+    if (!this.genAI || process.env.NODE_ENV === 'test') {
+      this.logger.warn('Gemini API key not found or running in test mode. Returning mock data.');
+      return mockFallback;
+    }
+
+    try {
+      const promptPath = path.join(process.cwd(), '../antigravity/prompts/recommendation_v1.md');
+      let promptTemplate = fs.readFileSync(promptPath, 'utf-8');
+
+      // Inject Variables
+      const up = session.userPlan || {} as any;
+      const ud = session.userDemand || {} as any;
+
+      promptTemplate = promptTemplate
+        .replace('{{user_carrier}}', up.carrier || '없음')
+        .replace('{{user_plan_name}}', up.planName || '없음')
+        .replace('{{user_network_type}}', up.networkType || '없음')
+        .replace('{{user_base_fee}}', up.baseFee?.toString() || '0')
+        .replace('{{user_data_allowance_gb}}', up.dataAllowanceGb?.toString() || '0')
+        .replace('{{user_voice_allowance_min}}', up.voiceAllowanceMin?.toString() || '0')
+        .replace('{{preferred_carrier}}', ud.preferredCarrier || '상관 없음')
+        .replace('{{preferred_network_type}}', ud.preferredNetworkType || '상관 없음')
+        .replace('{{max_fee}}', ud.maxFee?.toString() || '상관 없음')
+        .replace('{{min_data_gb}}', ud.minDataGb?.toString() || '상관 없음')
+        .replace('{{min_voice_min}}', ud.minVoiceMin?.toString() || '상관 없음')
+        .replace('{{candidate_plans_json}}', JSON.stringify(candidatePlans, null, 2));
+
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              recommendations: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    rank: { type: Type.INTEGER },
+                    plan_id: { type: Type.INTEGER },
+                    carrier: { type: Type.STRING },
+                    plan_name: { type: Type.STRING },
+                    base_fee: { type: Type.INTEGER },
+                    data_allowance_gb: { type: Type.NUMBER },
+                    voice_allowance_min: { type: Type.INTEGER },
+                    reason: { type: Type.STRING }
+                  },
+                  required: ['rank', 'plan_id', 'carrier', 'plan_name', 'base_fee', 'data_allowance_gb', 'voice_allowance_min', 'reason']
+                }
+              }
+            },
+            required: ['recommendations']
+          }
+        }
+      });
+
+      this.logger.log(`Calling Gemini API for inputId: ${inputId}`);
+      const result = await model.generateContent(promptTemplate);
+      const responseText = result.response.text();
+      
+      const parsed = JSON.parse(responseText);
+      
+      // Map to UI format
+      return {
+        recommendations: parsed.recommendations.map((r: any) => ({
+          plan: {
+            carrier: r.carrier,
+            planName: r.plan_name,
+            baseFee: r.base_fee,
+            dataAllowanceGb: r.data_allowance_gb,
+            voiceAllowanceMin: r.voice_allowance_min,
+          },
+          reason: r.reason
+        }))
+      };
+
+    } catch (error) {
+      this.logger.error(`AI Recommendation failed: ${error.message}`);
+      return mockFallback; // Fallback
+    }
   }
 }

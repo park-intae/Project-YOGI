@@ -3,6 +3,7 @@ import { RecommendationsService } from './recommendations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { ConfigService } from '@nestjs/config';
 
 describe('RecommendationsService', () => {
   let service: RecommendationsService;
@@ -16,6 +17,12 @@ describe('RecommendationsService', () => {
           provide: PrismaService,
           useValue: {
             $transaction: vi.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: vi.fn(),
           },
         },
       ],

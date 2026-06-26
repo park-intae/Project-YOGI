@@ -5,11 +5,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // PrismaService Mocking
 const mockPrismaService = {
+  $transaction: vi.fn(async (cb) => {
+    return cb(mockPrismaService);
+  }),
   plan: {
     deleteMany: vi.fn(),
     create: vi.fn(),
     findMany: vi.fn(),
     update: vi.fn(),
+    upsert: vi.fn(),
   },
 };
 
@@ -33,15 +37,14 @@ describe('TelemetryService', () => {
 
   describe('ingest', () => {
     it('MOCK_CASE_01_SUCCESS가 주어지면 정상적으로 Plan 1차 덤프를 생성해야 한다', async () => {
-      mockPrismaService.plan.deleteMany.mockResolvedValue({ count: 2 });
-      mockPrismaService.plan.create.mockResolvedValue({ id: 1 } as any);
+      mockPrismaService.plan.upsert.mockResolvedValue({ id: 1 } as any);
 
       const result = await service.ingest('MOCK_CASE_01_SUCCESS');
 
       expect(result.success).toBe(true);
       expect(result.count).toBe(2);
-      expect(mockPrismaService.plan.deleteMany).toHaveBeenCalledTimes(1);
-      expect(mockPrismaService.plan.create).toHaveBeenCalledTimes(2);
+      expect(mockPrismaService.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.plan.upsert).toHaveBeenCalledTimes(2);
     });
 
     it('API 에러 발생 시 최대 3회까지 지수 백오프(Retry & Backoff) 로직이 작동해야 한다', async () => {
@@ -56,8 +59,7 @@ describe('TelemetryService', () => {
           response_data: { plans: [{ carrier: 'SKT', plan_name: 'TEST' }] }
         });
 
-      mockPrismaService.plan.deleteMany.mockResolvedValue({ count: 1 });
-      mockPrismaService.plan.create.mockResolvedValue({ id: 1 } as any);
+      mockPrismaService.plan.upsert.mockResolvedValue({ id: 1 } as any);
 
       // ingest를 실행 (await 없이 Promise 저장)
       const ingestPromise = service.ingest('MOCK_CASE_RETRY');

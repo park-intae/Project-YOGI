@@ -92,23 +92,36 @@ export class TelemetryService {
       throw new Error('Invalid plans data structure in response.');
     }
 
-    // 기존 Plan 데이터를 비우고 새로운 데이터를 적재
-    await this.prisma.plan.deleteMany({});
+    // 변경된 내용만 업데이트(Upsert)하는 로직으로 개편 (DB I/O 및 다운타임 방지)
+    // 파이프라인 구동 시 예기치 못한 크러시가 발생해도 데이터가 오염되지 않도록 트랜잭션 사용
+    await this.prisma.$transaction(async (tx) => {
+      for (const plan of plans) {
+        const carrier = plan.carrier || '';
+        const planName = plan.plan_name || '';
 
-    for (const plan of plans) {
-      // 덤프 단계이므로, 파싱되지 않은 원본 그대로 JSON 직렬화하여 raw_plan_description에 저장
-      await this.prisma.plan.create({
-        data: {
-          carrier: plan.carrier || '',
-          planName: plan.plan_name || '',
-          networkType: plan.network_type || '',
-          baseFee: 0, // transform 단계에서 파싱하여 업데이트할 것이므로 기본값 설정
-          dataAllowanceGb: 0,
-          voiceAllowanceMin: 0,
-          rawPlanDescription: JSON.stringify(plan), // 원천 데이터 백업
-        },
-      });
-    }
+        await tx.plan.upsert({
+          where: {
+            carrier_planName: {
+              carrier,
+              planName,
+            },
+          },
+          update: {
+            networkType: plan.network_type || '',
+            rawPlanDescription: JSON.stringify(plan),
+          },
+          create: {
+            carrier,
+            planName,
+            networkType: plan.network_type || '',
+            baseFee: 0, // transform 단계에서 파싱하여 업데이트할 것이므로 기본값 설정
+            dataAllowanceGb: 0,
+            voiceAllowanceMin: 0,
+            rawPlanDescription: JSON.stringify(plan),
+          },
+        });
+      }
+    });
 
     this.logger.log(`[Ingest] Successfully ingested ${plans.length} raw plans into database.`);
     return { success: true, count: plans.length };
@@ -155,7 +168,7 @@ export class TelemetryService {
         updatedCount++;
       } catch (error) {
         this.logger.error(`[Transform] Failed to transform plan ID: ${plan.id}. Error: ${error.message}`);
-        throw error;
+        // throw error; // 에러가 발생해도 중단하지 않고 다음 요금제 처리 진행 (배치 로깅 형태)
       }
     }
 

@@ -44,6 +44,9 @@ const mockPrismaService = {
       return null;
     }),
   },
+  plan: {
+    findMany: vi.fn().mockResolvedValue([]),
+  },
 };
 
 describe('Recommendations API (e2e)', () => {

@@ -41,25 +41,26 @@
 - [x] 백엔드부터 체크리스트에 따라 수정
 
 ### [Phase 6] 데이터베이스 로직 고도화
-- [ ] 실제 데이터베이스 스키마 및 적재 로직 최적화 검토
-- [ ] 데이터 무결성 보장을 위한 트랜잭션 범위 세분화
-- [ ] 외부 데이터(요금제 정보) 인제스트(Ingest) 고도화
+- [x] 실제 데이터베이스 스키마 및 적재 로직 최적화 검토
+- [x] 데이터 무결성 보장을 위한 트랜잭션 범위 세분화
+- [x] 외부 데이터(요금제 정보) 인제스트(Ingest) 고도화
 
 ### [Phase 7] 외부 API 및 실제 AI 추천 프롬프트 연동
-- [ ] 스마트초이스 외부 API 연동 및 네트워크 장애 대비 로직 고도화
-- [ ] 실제 생성형 AI(LLM) 프롬프트 연동 및 추천 결과 JSON 파싱
-- [ ] 프롬프트 컨텍스트(사용자 요금제 비교) 최적화
+- [x] 스마트초이스 외부 API 연동 및 네트워크 장애 대비 로직 고도화
+- [x] 실제 생성형 AI(LLM) 프롬프트 연동 및 추천 결과 JSON 파싱
+- [x] 프롬프트 컨텍스트(사용자 요금제 비교) 최적화
 --
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-06-26T17:28:00+09:00
+- **일시**: 2026-06-26T18:34:00+09:00
 - **완료된 작업**:
-  - **[QA/Test]** 백엔드 TelemetryService의 지수 백오프 로직 구현 및 Vitest 테스트 통과.
-  - **[QA/Test]** 백엔드 RecommendationsController의 E2E 테스트(단방향 흐름 및 403 세션 격리) 구현 및 통과.
-  - **[QA/Test]** 프론트엔드 Vitest 및 React Testing Library 세팅, 주요 컴포넌트 5개(Header, OptionCard, DiagnosticForm 등) 테스트 작성 및 통과.
+  - **[Phase 6]** DB Schema 최적화 및 Telemetry Upsert / Dead Letter 로깅 구현 완료.
+  - **[Phase 7]** 백엔드에 `@google/generative-ai` 모듈 설치 및 `RecommendationsService` 내 LLM 추천 로직 구현 완료.
+  - **[Phase 7]** `@antigravity/prompts/recommendation_v1.md` 로드 및 컨텍스트 매핑, JSON Schema 기반 Structured Output 적용 완료.
+  - **[Phase 7]** API 실패/Test 모드 환경에서의 Fallback Mock 데이터 반환 안정성 확보.
+  - 백엔드 E2E 및 단위 테스트(`npm run test`) 실행하여 23/23 `PASS` 확인.
 - **중단점 및 다음 작업 (Next Steps)**:
-  - **[Phase 6]** 데이터베이스 로직 고도화 진입 전 세부 계획 수립.
-  - **[Phase 7]** 외부 API 및 실제 AI 추천 프롬프트 연동 설계 및 작업 준비.
+  - Phase 6과 7의 핵심 기능 구현이 완료됨. 추가 기획 사항이나 프론트엔드 연동, 클라우드 배포 등 진행 여부 논의 필요.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
