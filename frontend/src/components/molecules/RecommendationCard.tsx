@@ -1,16 +1,6 @@
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import ConcentricDonutChart from '../atoms/ConcentricDonutChart';
-
-interface RecommendedPlanDto {
-  rank: number;
-  plan_id: string;
-  carrier_name: string;
-  plan_name: string;
-  price: number;
-  data_allowance: number;
-  data_speed_limit: number;
-  expected_savings: number;
-}
+import { RecommendedPlanDto } from '../../lib/api';
 
 interface RecommendationCardProps {
   idx: number;
