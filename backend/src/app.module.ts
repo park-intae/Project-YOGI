@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     PrismaModule,
     TelemetryModule,
     RecommendationsModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -30,26 +30,24 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-export interface UserPlanDto {
-  carrier: string;
-  planName: string;
-  networkType: string;
-  baseFee: number;
-  dataAllowanceGb: number;
-  voiceAllowanceMin: number;
+export interface CurrentPlanDto {
+  actual_carrier: string;
+  actual_plan_name: string;
+  actual_monthly_fee: number;
+  actual_data_usage: number;
+  actual_voice_usage: number;
 }
 
-export interface UserDemandDto {
-  preferredCarrier?: string;
-  preferredNetworkType?: string;
-  maxFee?: number;
-  minDataGb?: number;
-  minVoiceMin?: number;
+export interface DemandConditionDto {
+  preferred_carrier_type?: string;
+  preferred_network_type?: string;
+  max_budget?: number;
 }
 
 export interface CreateSessionDto {
-  userPlan?: UserPlanDto;
-  userDemand?: UserDemandDto;
+  input_type: 'PLAN' | 'DEMAND' | 'BOTH';
+  current_plan?: CurrentPlanDto;
+  demand_condition?: DemandConditionDto;
 }
 
 export interface SessionResponseDto {
@@ -57,8 +55,29 @@ export interface SessionResponseDto {
   sessionId: string;
 }
 
+export interface RecommendedPlanDto {
+  rank: number;
+  plan_id: string;
+  carrier_name: string;
+  plan_name: string;
+  price: number;
+  data_allowance: number;
+  data_speed_limit: number;
+  expected_savings: number;
+}
+
 export interface RecommendationResponseDto {
-  recommendations: any[]; // replace with actual recommendation interface when known
+  input_id: string;
+  recommended_at: string;
+  ai_summary_comment: string;
+  recommended_plans: RecommendedPlanDto[];
+}
+
+export interface PlanFilterParams {
+  carrier_type?: string;
+  network_type?: string;
+  min_price?: number;
+  max_price?: number;
 }
 
 export const yogiApi = {
@@ -69,6 +88,11 @@ export const yogiApi = {
   
   getRecommendations: async (inputId: string): Promise<RecommendationResponseDto> => {
     const response = await apiClient.get<RecommendationResponseDto>(`/v1/recommendations/${inputId}`);
+    return response.data;
+  },
+
+  getPlans: async (params?: PlanFilterParams): Promise<any[]> => {
+    const response = await apiClient.get<any[]>('/v1/plans', { params });
     return response.data;
   }
 };

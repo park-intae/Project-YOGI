@@ -5,14 +5,14 @@ import RecommendationList from './RecommendationList';
 
 describe('RecommendationList component', () => {
   const mockRecs = Array.from({ length: 5 }, (_, i) => ({
-    plan: {
-      carrier: 'SKT',
-      planName: `Plan ${i + 1}`,
-      baseFee: 50000 + i * 10000,
-      dataAllowanceGb: 10 * (i + 1),
-      voiceAllowanceMin: 9999,
-    },
-    reason: `Reason ${i + 1}`,
+    rank: i + 1,
+    plan_id: String(i + 1),
+    carrier_name: 'SKT',
+    plan_name: `Plan ${i + 1}`,
+    price: 50000 + i * 10000,
+    data_allowance: 10 * (i + 1),
+    data_speed_limit: 0,
+    expected_savings: 100000 - (50000 + i * 10000),
   }));
 
   it('renders only top 3 recommendations initially', () => {

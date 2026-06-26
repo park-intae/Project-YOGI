@@ -5,14 +5,14 @@ import RecommendationCard from './RecommendationCard';
 
 describe('RecommendationCard component', () => {
   const mockRec = {
-    plan: {
-      carrier: 'SKT',
-      planName: '5GX 프라임',
-      baseFee: 89000,
-      dataAllowanceGb: 9999,
-      voiceAllowanceMin: 9999,
-    },
-    reason: '데이터 무제한 요금제입니다.',
+    rank: 1,
+    plan_id: '1',
+    carrier_name: 'SKT',
+    plan_name: '5GX 프라임',
+    price: 89000,
+    data_allowance: 9999,
+    data_speed_limit: 0,
+    expected_savings: 11000,
   };
 
   it('renders plan name and fee', () => {

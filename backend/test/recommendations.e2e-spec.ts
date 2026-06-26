@@ -12,20 +12,20 @@ const mockPrismaService = {
       inputSession: {
         create: vi.fn().mockImplementation(async ({ data }) => {
           if (data.sessionId === 'session-test-a') {
-            return { id: 'test-uuid-a', sessionId: data.sessionId };
+            return { id: '00000000-0000-0000-0000-00000000000a', sessionId: data.sessionId };
           }
-          return { id: 'test-uuid-1234', sessionId: data.sessionId };
+          return { id: '11111111-1111-1111-1111-111111111111', sessionId: data.sessionId };
         }),
         findUnique: vi.fn().mockImplementation(async ({ where }) => {
-          if (where.id === 'test-uuid-1234') {
+          if (where.id === '11111111-1111-1111-1111-111111111111') {
             return {
-              id: 'test-uuid-1234',
+              id: '11111111-1111-1111-1111-111111111111',
               sessionId: 'session-test-123', // Mapped from POST create
             };
           }
-          if (where.id === 'test-uuid-a') {
+          if (where.id === '00000000-0000-0000-0000-00000000000a') {
             return {
-              id: 'test-uuid-a',
+              id: '00000000-0000-0000-0000-00000000000a',
               sessionId: 'session-test-a',
             };
           }
@@ -39,8 +39,8 @@ const mockPrismaService = {
   }),
   inputSession: {
     findUnique: vi.fn().mockImplementation(async ({ where }) => {
-      if (where.id === 'test-uuid-1234') return { id: 'test-uuid-1234', sessionId: 'session-test-123' };
-      if (where.id === 'test-uuid-a') return { id: 'test-uuid-a', sessionId: 'session-test-a' };
+      if (where.id === '11111111-1111-1111-1111-111111111111') return { id: '11111111-1111-1111-1111-111111111111', sessionId: 'session-test-123' };
+      if (where.id === '00000000-0000-0000-0000-00000000000a') return { id: '00000000-0000-0000-0000-00000000000a', sessionId: 'session-test-a' };
       return null;
     }),
   },
@@ -77,9 +77,10 @@ describe('Recommendations API (e2e)', () => {
         .post('/api/v1/recommandations')
         .set('X-Session-ID', sessionId)
         .send({
-          userDemand: {
-            minDataGb: 50,
-            maxFee: 50000,
+          input_type: 'DEMAND',
+          demand_condition: {
+            min_data_gb: 50,
+            max_budget: 50000,
           }
         })
         .expect(201);
@@ -94,8 +95,8 @@ describe('Recommendations API (e2e)', () => {
         .set('X-Session-ID', sessionId)
         .expect(200);
 
-      expect(response.body).toHaveProperty('recommendations');
-      expect(Array.isArray(response.body.recommendations)).toBe(true);
+      expect(response.body).toHaveProperty('recommended_plans');
+      expect(Array.isArray(response.body.recommended_plans)).toBe(true);
     });
   });
 
@@ -109,13 +110,13 @@ describe('Recommendations API (e2e)', () => {
         .post('/api/v1/recommandations')
         .set('X-Session-ID', sessionId1)
         .send({
-          userPlan: {
-            carrier: 'SKT',
-            planName: 'Test',
-            networkType: '5G',
-            baseFee: 50000,
-            dataAllowanceGb: 10,
-            voiceAllowanceMin: 100,
+          input_type: 'PLAN',
+          current_plan: {
+            actual_carrier: 'SKT',
+            actual_plan_name: 'Test',
+            actual_monthly_fee: 50000,
+            actual_data_usage: 10,
+            actual_voice_usage: 100,
           }
         })
         .expect(201);

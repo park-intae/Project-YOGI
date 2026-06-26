@@ -1,23 +1,23 @@
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
-interface Plan {
-  carrier: string;
-  planName: string;
-  baseFee: number;
-  dataAllowanceGb: number;
-  voiceAllowanceMin: number;
+interface RecommendedPlanDto {
+  rank: number;
+  plan_id: string;
+  carrier_name: string;
+  plan_name: string;
+  price: number;
+  data_allowance: number;
+  data_speed_limit: number;
+  expected_savings: number;
 }
 
 interface RecommendationCardProps {
   idx: number;
-  rec: {
-    plan?: Plan;
-    reason?: string;
-  };
+  rec: RecommendedPlanDto;
   currentFee: number;
 }
 
-function DifferenceCircles({ rec, idx }: { rec: any, idx: number }) {
+function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number }) {
   const dataColor = 'border-blue-500';
   const voiceColor = 'border-green-500';
   const smsColor = 'border-orange-400';
@@ -28,14 +28,14 @@ function DifferenceCircles({ rec, idx }: { rec: any, idx: number }) {
         <span className="text-xs font-bold text-gray-700 mb-2">데이터</span>
         <div className={`w-14 h-14 rounded-full border-4 ${dataColor} flex items-center justify-center`}></div>
         <span className="text-[10px] text-gray-500 text-center mt-2 whitespace-pre-line leading-tight">
-          {idx === 1 ? '▼ 무제한 대비\n여유 100GB' : (rec.plan?.dataAllowanceGb === 9999 ? '무제한' : '무제한')}
+          {rec.data_allowance === 9999 ? '무제한' : `${rec.data_allowance}GB`}
         </span>
         {idx !== 1 && <span className="text-[11px] font-bold text-gray-600 mt-1">동일</span>}
       </div>
       <div className="flex flex-col items-center">
         <span className="text-xs font-bold text-gray-700 mb-2">통화</span>
         <div className={`w-14 h-14 rounded-full border-4 ${voiceColor} flex items-center justify-center`}></div>
-        <span className="text-[10px] text-gray-500 text-center mt-2">{rec.plan?.voiceAllowanceMin === 9999 ? '무제한' : '무제한'}</span>
+        <span className="text-[10px] text-gray-500 text-center mt-2">무제한</span>
         <span className="text-[11px] font-bold text-gray-600 mt-1">동일</span>
       </div>
       <div className="flex flex-col items-center">
@@ -49,9 +49,8 @@ function DifferenceCircles({ rec, idx }: { rec: any, idx: number }) {
 }
 
 export default function RecommendationCard({ idx, rec, currentFee }: RecommendationCardProps) {
-  const diff = currentFee - (rec.plan?.baseFee || 0);
-  const isSaving = diff > 0;
-  const isSame = diff === 0;
+  const isSaving = rec.expected_savings > 0;
+  const isSame = rec.expected_savings === 0;
 
   return (
     <div className={`relative bg-white rounded-2xl p-6 ${idx === 0 ? 'border-2 border-blue-600 shadow-md' : 'border border-gray-200 shadow-sm'}`}>
@@ -63,7 +62,7 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[8px] font-bold">T</div>
-            <span className="text-sm font-semibold text-gray-600">{rec.plan?.carrier}</span>
+            <span className="text-sm font-semibold text-gray-600">{rec.carrier_name}</span>
           </div>
         </div>
         {idx === 0 && (
@@ -73,18 +72,18 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
 
       {/* Plan Name & Price */}
       <div className="text-center mb-4">
-        <h3 className="text-lg font-bold text-gray-900">{rec.plan?.planName || '추천 요금제'}</h3>
-        <p className="text-2xl font-bold text-gray-900 mt-2">월 {(rec.plan?.baseFee || 0).toLocaleString()}원</p>
+        <h3 className="text-lg font-bold text-gray-900">{rec.plan_name}</h3>
+        <p className="text-2xl font-bold text-gray-900 mt-2">월 {rec.price.toLocaleString()}원</p>
       </div>
 
       {/* Highlight Box */}
       {!isSame && (
         <div className={`rounded-xl py-4 text-center ${isSaving ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
           <p className="font-bold text-lg flex items-center justify-center">
-            월 {Math.abs(diff).toLocaleString()}원 {isSaving ? '절약' : '추가'}
+            월 {Math.abs(rec.expected_savings).toLocaleString()}원 {isSaving ? '절약' : '추가'}
             {isSaving ? <ArrowDown size={18} className="ml-1" /> : <ArrowUp size={18} className="ml-1" />}
           </p>
-          <p className={`text-sm mt-1 ${isSaving ? 'text-red-400' : 'text-blue-400'}`}>연 {(Math.abs(diff) * 12).toLocaleString()}원 {isSaving ? '절약' : '추가'}</p>
+          <p className={`text-sm mt-1 ${isSaving ? 'text-red-400' : 'text-blue-400'}`}>연 {(Math.abs(rec.expected_savings) * 12).toLocaleString()}원 {isSaving ? '절약' : '추가'}</p>
         </div>
       )}
 
@@ -102,9 +101,6 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
       <button className="w-full mt-8 py-3.5 border border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors">
         자세히 보기
       </button>
-      
-      {/* Reason Text below button */}
-      <p className="text-xs text-gray-400 mt-4 text-center line-clamp-2">{rec.reason}</p>
     </div>
   );
 }

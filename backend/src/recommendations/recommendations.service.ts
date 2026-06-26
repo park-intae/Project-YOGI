@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, NotFoundException, ForbiddenException,
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { ConfigService } from '@nestjs/config';
-import { GoogleGenerativeAI, Schema, Type } from '@google/generative-ai';
+import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -22,8 +22,11 @@ export class RecommendationsService {
   }
 
   async createSession(sessionId: string, dto: CreateSessionDto) {
-    if (!dto.userPlan && !dto.userDemand) {
-      throw new BadRequestException('At least one of userPlan or userDemand must be provided.');
+    if (dto.input_type === 'PLAN' || dto.input_type === 'BOTH') {
+      if (!dto.current_plan) throw new BadRequestException('current_plan is required for this input_type.');
+    }
+    if (dto.input_type === 'DEMAND' || dto.input_type === 'BOTH') {
+      if (!dto.demand_condition) throw new BadRequestException('demand_condition is required for this input_type.');
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -33,29 +36,27 @@ export class RecommendationsService {
         },
       });
 
-      if (dto.userPlan) {
+      if (dto.current_plan) {
         await tx.userPlan.create({
           data: {
             inputId: inputSession.id,
-            carrier: dto.userPlan.carrier,
-            planName: dto.userPlan.planName,
-            networkType: dto.userPlan.networkType,
-            baseFee: dto.userPlan.baseFee,
-            dataAllowanceGb: dto.userPlan.dataAllowanceGb,
-            voiceAllowanceMin: dto.userPlan.voiceAllowanceMin,
+            carrier: dto.current_plan.actual_carrier,
+            planName: dto.current_plan.actual_plan_name,
+            networkType: 'UNKNOWN', // Legacy field fallback
+            baseFee: dto.current_plan.actual_monthly_fee,
+            dataAllowanceGb: dto.current_plan.actual_data_usage,
+            voiceAllowanceMin: dto.current_plan.actual_voice_usage,
           },
         });
       }
 
-      if (dto.userDemand) {
+      if (dto.demand_condition) {
         await tx.userDemand.create({
           data: {
             inputId: inputSession.id,
-            preferredCarrier: dto.userDemand.preferredCarrier,
-            preferredNetworkType: dto.userDemand.preferredNetworkType,
-            maxFee: dto.userDemand.maxFee,
-            minDataGb: dto.userDemand.minDataGb,
-            minVoiceMin: dto.userDemand.minVoiceMin,
+            preferredCarrier: dto.demand_condition.preferred_carrier_type,
+            preferredNetworkType: dto.demand_condition.preferred_network_type,
+            maxFee: dto.demand_condition.max_budget,
           },
         });
       }
@@ -74,8 +75,6 @@ export class RecommendationsService {
     const where: any = { baseFee: { gt: 0 } };
     
     if (demand?.maxFee) where.baseFee = { ...where.baseFee, lte: demand.maxFee };
-    if (demand?.minDataGb) where.dataAllowanceGb = { gte: demand.minDataGb };
-    if (demand?.minVoiceMin) where.voiceAllowanceMin = { gte: demand.minVoiceMin };
     if (demand?.preferredCarrier) where.carrier = demand.preferredCarrier;
     if (demand?.preferredNetworkType) where.networkType = demand.preferredNetworkType;
 
@@ -115,36 +114,29 @@ export class RecommendationsService {
     
     // Fallback to mock data if no apiKey or AI fails
     const mockFallback = {
-      recommendations: [
+      input_id: inputId,
+      recommended_at: new Date().toISOString(),
+      ai_summary_comment: 'API 키가 없어 임시 모의 데이터를 반환합니다.',
+      recommended_plans: [
         {
-          plan: {
-            carrier: 'SKT',
-            planName: '5GX 레귤러 플러스',
-            baseFee: 69000,
-            dataAllowanceGb: 250,
-            voiceAllowanceMin: 9999,
-          },
-          reason: '기존 무제한 요금제 대비 데이터 사용량이 적어 250GB 요금제로 낮추면 매월 20,000원을 절약할 수 있습니다.',
+          rank: 1,
+          plan_id: candidatePlans[0]?.id?.toString() || 'mock-id-1',
+          carrier_name: 'SKT',
+          plan_name: '5GX 레귤러 플러스',
+          price: 69000,
+          data_allowance: 250,
+          data_speed_limit: 5,
+          expected_savings: 20000,
         },
         {
-          plan: {
-            carrier: 'KT',
-            planName: '5G 슬림',
-            baseFee: 55000,
-            dataAllowanceGb: 10,
-            voiceAllowanceMin: 9999,
-          },
-          reason: '필수적인 데이터만 사용하신다면 5G 슬림 요금제를 통해 통신비를 대폭 줄일 수 있습니다.',
-        },
-        {
-          plan: {
-            carrier: 'LGU+',
-            planName: '5G 스탠다드',
-            baseFee: 99000,
-            dataAllowanceGb: 9999,
-            voiceAllowanceMin: 9999,
-          },
-          reason: '데이터 무제한 혜택을 원하시며 추가적인 멤버십 혜택을 활용하고 싶다면 좋은 선택입니다.',
+          rank: 2,
+          plan_id: candidatePlans[1]?.id?.toString() || 'mock-id-2',
+          carrier_name: 'KT',
+          plan_name: '5G 슬림',
+          price: 55000,
+          data_allowance: 10,
+          data_speed_limit: 1,
+          expected_savings: 34000,
         }
       ]
     };
@@ -158,7 +150,6 @@ export class RecommendationsService {
       const promptPath = path.join(process.cwd(), '../antigravity/prompts/recommendation_v1.md');
       let promptTemplate = fs.readFileSync(promptPath, 'utf-8');
 
-      // Inject Variables
       const up = session.userPlan || {} as any;
       const ud = session.userDemand || {} as any;
 
@@ -181,27 +172,28 @@ export class RecommendationsService {
         generationConfig: {
           responseMimeType: 'application/json',
           responseSchema: {
-            type: Type.OBJECT,
+            type: SchemaType.OBJECT,
             properties: {
-              recommendations: {
-                type: Type.ARRAY,
+              ai_summary_comment: { type: SchemaType.STRING },
+              recommended_plans: {
+                type: SchemaType.ARRAY,
                 items: {
-                  type: Type.OBJECT,
+                  type: SchemaType.OBJECT,
                   properties: {
-                    rank: { type: Type.INTEGER },
-                    plan_id: { type: Type.INTEGER },
-                    carrier: { type: Type.STRING },
-                    plan_name: { type: Type.STRING },
-                    base_fee: { type: Type.INTEGER },
-                    data_allowance_gb: { type: Type.NUMBER },
-                    voice_allowance_min: { type: Type.INTEGER },
-                    reason: { type: Type.STRING }
+                    rank: { type: SchemaType.INTEGER },
+                    plan_id: { type: SchemaType.STRING },
+                    carrier_name: { type: SchemaType.STRING },
+                    plan_name: { type: SchemaType.STRING },
+                    price: { type: SchemaType.INTEGER },
+                    data_allowance: { type: SchemaType.NUMBER },
+                    data_speed_limit: { type: SchemaType.NUMBER },
+                    expected_savings: { type: SchemaType.INTEGER }
                   },
-                  required: ['rank', 'plan_id', 'carrier', 'plan_name', 'base_fee', 'data_allowance_gb', 'voice_allowance_min', 'reason']
+                  required: ['rank', 'plan_id', 'carrier_name', 'plan_name', 'price', 'data_allowance', 'data_speed_limit', 'expected_savings']
                 }
               }
             },
-            required: ['recommendations']
+            required: ['ai_summary_comment', 'recommended_plans']
           }
         }
       });
@@ -212,18 +204,11 @@ export class RecommendationsService {
       
       const parsed = JSON.parse(responseText);
       
-      // Map to UI format
       return {
-        recommendations: parsed.recommendations.map((r: any) => ({
-          plan: {
-            carrier: r.carrier,
-            planName: r.plan_name,
-            baseFee: r.base_fee,
-            dataAllowanceGb: r.data_allowance_gb,
-            voiceAllowanceMin: r.voice_allowance_min,
-          },
-          reason: r.reason
-        }))
+        input_id: inputId,
+        recommended_at: new Date().toISOString(),
+        ai_summary_comment: parsed.ai_summary_comment,
+        recommended_plans: parsed.recommended_plans
       };
 
     } catch (error) {

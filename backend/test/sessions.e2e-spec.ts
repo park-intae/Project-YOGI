@@ -30,43 +30,45 @@ describe('RecommendationsController (e2e)', () => {
     return request(app.getHttpServer())
       .post('/api/v1/recommandations')
       .send({
-        userPlan: {
-          carrier: 'SKT',
-          planName: '5G 스탠다드',
-          networkType: '5G',
-          baseFee: 75000,
-          dataAllowanceGb: 200,
-          voiceAllowanceMin: -1,
+        input_type: 'PLAN',
+        current_plan: {
+          actual_carrier: 'SKT',
+          actual_plan_name: '5G 스탠다드',
+          actual_monthly_fee: 75000,
+          actual_data_usage: 200,
+          actual_voice_usage: -1,
         }
       })
       .expect(401);
   });
 
-  it('/api/v1/recommandations (POST) - should fail if body has neither userPlan nor userDemand', () => {
+  it('/api/v1/recommandations (POST) - should fail if body has neither current_plan nor demand_condition', () => {
     return request(app.getHttpServer())
       .post('/api/v1/recommandations')
       .set('X-Session-ID', '123e4567-e89b-12d3-a456-426614174000')
-      .send({})
+      .send({
+        input_type: 'BOTH'
+      })
       .expect(400);
   });
 
-  it('/api/v1/recommandations (POST) - should create session with userPlan and userDemand', async () => {
+  it('/api/v1/recommandations (POST) - should create session with current_plan and demand_condition', async () => {
     const sessionId = '123e4567-e89b-12d3-a456-426614174000';
     const response = await request(app.getHttpServer())
       .post('/api/v1/recommandations')
       .set('X-Session-ID', sessionId)
       .send({
-        userPlan: {
-          carrier: 'SKT',
-          planName: '5G 스탠다드',
-          networkType: '5G',
-          baseFee: 75000,
-          dataAllowanceGb: 200,
-          voiceAllowanceMin: -1,
+        input_type: 'BOTH',
+        current_plan: {
+          actual_carrier: 'SKT',
+          actual_plan_name: '5G 스탠다드',
+          actual_monthly_fee: 75000,
+          actual_data_usage: 200,
+          actual_voice_usage: -1,
         },
-        userDemand: {
-          preferredCarrier: 'KT',
-          maxFee: 50000,
+        demand_condition: {
+          preferred_carrier_type: 'KT',
+          max_budget: 50000,
         }
       })
       .expect(201);
@@ -81,31 +83,31 @@ describe('RecommendationsController (e2e)', () => {
 
   it('/api/v1/recommendations/:id (GET) - should generate prompt based on session', async () => {
     const sessionId = '123e4567-e89b-12d3-a456-426614174000';
-    // Create a session first to ensure we have a valid input_id
     const createRes = await request(app.getHttpServer())
       .post('/api/v1/recommandations')
       .set('X-Session-ID', sessionId)
       .send({
-        userPlan: {
-          carrier: 'LG',
-          planName: 'LTE 기본',
-          networkType: 'LTE',
-          baseFee: 33000,
-          dataAllowanceGb: 5,
-          voiceAllowanceMin: 100,
+        input_type: 'PLAN',
+        current_plan: {
+          actual_carrier: 'LG',
+          actual_plan_name: 'LTE 기본',
+          actual_monthly_fee: 33000,
+          actual_data_usage: 5,
+          actual_voice_usage: 100,
         }
       });
     
     const inputId = createRes.body.id;
+    if (!inputId) {
+      throw new Error('Failed to create session, no inputId returned');
+    }
 
     const response = await request(app.getHttpServer())
       .get(`/api/v1/recommendations/${inputId}`)
       .set('X-Session-ID', sessionId)
       .expect(200);
 
-    // expect(response.body).toHaveProperty('prompt');
-    // We changed the mock data to return an array of recommendations, let's test for that instead
-    expect(response.body).toHaveProperty('recommendations');
-    expect(Array.isArray(response.body.recommendations)).toBe(true);
+    expect(response.body).toHaveProperty('recommended_plans');
+    expect(Array.isArray(response.body.recommended_plans)).toBe(true);
   });
 });

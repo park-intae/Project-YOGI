@@ -34,7 +34,8 @@ function LoadingSkeleton() {
 async function RecommendationContent({ inputId }: { inputId: string }) {
   try {
     const data = await getRecommendations(inputId);
-    const recommendations = data.recommendations || [];
+    const recommendations = data.recommended_plans || [];
+    const aiSummary = data.ai_summary_comment || '';
     const currentFee = 89000; // Mock current fee based on design
 
     return (
@@ -50,8 +51,14 @@ async function RecommendationContent({ inputId }: { inputId: string }) {
           </button>
         </div>
 
+        {aiSummary && (
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+            <p className="text-sm text-blue-800 font-medium">{aiSummary}</p>
+          </div>
+        )}
+
         {recommendations.length > 0 ? (
-          <RecommendationList recommendations={data.recommendations} currentFee={currentFee} />
+          <RecommendationList recommendations={recommendations} currentFee={currentFee} />
         ) : (
           <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
             <p className="text-gray-500">추천 결과가 없습니다.</p>

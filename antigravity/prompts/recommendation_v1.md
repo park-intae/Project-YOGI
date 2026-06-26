@@ -35,16 +35,17 @@
 ### JSON Output Schema
 ```json
 {
-  "recommendations": [
+  "ai_summary_comment": "현재 요금제 대비 통신비를 대폭 절약할 수 있는 5G 요금제를 추천합니다.",
+  "recommended_plans": [
     {
       "rank": 1,
-      "plan_id": 1,
-      "carrier": "SKT",
+      "plan_id": "1",
+      "carrier_name": "SKT",
       "plan_name": "5G 다이렉트 45",
-      "base_fee": 45000,
-      "data_allowance_gb": 50,
-      "voice_allowance_min": 9999,
-      "reason": "현재 요금제 대비 월 15,000원 통신비를 절약할 수 있으며, 월 50GB의 풍부한 데이터를 제공하여 요구사항을 충족합니다."
+      "price": 45000,
+      "data_allowance": 50,
+      "data_speed_limit": 0,
+      "expected_savings": 15000
     }
   ]
 }

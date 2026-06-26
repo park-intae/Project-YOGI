@@ -36,8 +36,8 @@ describe('RecommendationsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should throw BadRequestException if both userPlan and userDemand are empty', async () => {
-    await expect(service.createSession('session-123', {})).rejects.toThrow(BadRequestException);
+  it('should throw BadRequestException if both current_plan and demand_condition are empty for BOTH', async () => {
+    await expect(service.createSession('session-123', { input_type: 'BOTH' })).rejects.toThrow(BadRequestException);
   });
 
   it('should call prisma.$transaction when valid dto is provided', async () => {
@@ -51,7 +51,8 @@ describe('RecommendationsService', () => {
     });
 
     await service.createSession('session-123', {
-      userDemand: { maxFee: 50000 },
+      input_type: 'DEMAND',
+      demand_condition: { max_budget: 50000 },
     });
 
     expect(prisma.$transaction).toHaveBeenCalled();

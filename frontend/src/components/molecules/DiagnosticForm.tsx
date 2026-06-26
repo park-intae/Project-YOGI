@@ -29,13 +29,13 @@ export default function DiagnosticForm() {
 
     try {
       const response = await yogiApi.createSession({
-        userPlan: {
-          carrier: carrier,
-          planName: planName,
-          networkType: '5G', // default or derived
-          baseFee: Number(baseFee.replace(/[^0-9]/g, '')) || 0,
-          dataAllowanceGb: dataAllowanceGb === '무제한' ? 9999 : Number(dataAllowanceGb),
-          voiceAllowanceMin: voiceAllowanceMin === '무제한' ? 9999 : Number(voiceAllowanceMin),
+        input_type: 'PLAN',
+        current_plan: {
+          actual_carrier: carrier,
+          actual_plan_name: planName,
+          actual_monthly_fee: Number(baseFee.replace(/[^0-9]/g, '')) || 0,
+          actual_data_usage: dataAllowanceGb === '무제한' ? 9999 : Number(dataAllowanceGb),
+          actual_voice_usage: voiceAllowanceMin === '무제한' ? 9999 : Number(voiceAllowanceMin),
         }
       });
       router.push(`/?input_id=${response.id}`);
