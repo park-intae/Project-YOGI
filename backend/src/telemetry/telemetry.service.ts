@@ -30,20 +30,10 @@ export class TelemetryService {
   }
 
   /**
-   * 외부 API 또는 Mock 데이터를 호출하여 raw_plan_description을 DB에 1차 덤프합니다.
-   * @param mockCaseId 시뮬레이션할 Mock Case ID (예: 'MOCK_CASE_01_SUCCESS', 'MOCK_CASE_02_API_SERVER_DOWN', 'MOCK_CASE_03_DIRTY_DATA')
+   * 외부 API 호출을 모사(Mock)하는 메서드
+   * @param targetCaseId 시뮬레이션할 Mock Case ID
    */
-  async ingest(mockCaseId?: string) {
-    this.logger.log(`[Ingest] Starting ingestion. CaseID: ${mockCaseId || 'DEFAULT'}`);
-
-    // mockCaseId가 환경변수나 파라미터로 제공되지 않았다면 환경변수 MOCK_CASE에서 읽어옴
-    const targetCaseId = mockCaseId || process.env.MOCK_CASE || 'MOCK_CASE_01_SUCCESS';
-
-    // TODO: [추후 실제 스마트초이스 API 연동 위치]
-    // 현재는 파이프라인 검증을 위해 로컬 Mock JSON 파일을 읽어서 처리하지만,
-    // 실제 운영 시에는 이 부분을 axios 또는 NestJS HttpService를 이용한 스마트초이스 API HTTP 요청으로 교체해야 합니다.
-    
-    // 1. mock 데이터 로드
+  async fetchData(targetCaseId: string): Promise<any> {
     const mockFilePath = path.join(process.cwd(), '../antigravity/mocks/smartchoice_mock.json');
     if (!fs.existsSync(mockFilePath)) {
       throw new Error(`Mock file not found at ${mockFilePath}`);
@@ -61,6 +51,39 @@ export class TelemetryService {
     if (selectedCase.status === 'ERROR') {
       this.logger.error(`[Ingest] Mock API Error occurred. HTTP Status: ${selectedCase.http_status}`);
       throw new Error(`API_ERROR: ${selectedCase.response_data.message || 'Unknown error'}`);
+    }
+
+    return selectedCase;
+  }
+
+  /**
+   * 외부 API 또는 Mock 데이터를 호출하여 raw_plan_description을 DB에 1차 덤프합니다.
+   * @param mockCaseId 시뮬레이션할 Mock Case ID
+   */
+  async ingest(mockCaseId?: string) {
+    this.logger.log(`[Ingest] Starting ingestion. CaseID: ${mockCaseId || 'DEFAULT'}`);
+
+    const targetCaseId = mockCaseId || process.env.MOCK_CASE || 'MOCK_CASE_01_SUCCESS';
+
+    let selectedCase: any = null;
+    let attempt = 0;
+    const maxRetries = 3;
+    let delay = 2000;
+
+    while (attempt <= maxRetries) {
+      try {
+        selectedCase = await this.fetchData(targetCaseId);
+        break; // 성공 시 루프 탈출
+      } catch (error) {
+        if (error.message.includes('API_ERROR') && attempt < maxRetries) {
+          attempt++;
+          this.logger.warn(`[Ingest] API_ERROR occurred. Retrying in ${delay}ms... (Attempt ${attempt}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // 지수 백오프 (2초 -> 4초 -> 8초)
+        } else {
+          throw error; // 최대 재시도 초과 시 에러 던짐
+        }
+      }
     }
 
     // 3. raw_plan_description 1차 적재

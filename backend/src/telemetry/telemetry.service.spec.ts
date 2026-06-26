@@ -44,10 +44,59 @@ describe('TelemetryService', () => {
       expect(mockPrismaService.plan.create).toHaveBeenCalledTimes(2);
     });
 
-    it('MOCK_CASE_02_API_SERVER_DOWN 에러 케이스가 주어지면 API_ERROR 예외를 발생시켜야 한다 (Retry 검증용)', async () => {
-      await expect(service.ingest('MOCK_CASE_02_API_SERVER_DOWN')).rejects.toThrow(
-        'API_ERROR'
-      );
+    it('API 에러 발생 시 최대 3회까지 지수 백오프(Retry & Backoff) 로직이 작동해야 한다', async () => {
+      vi.useFakeTimers();
+      
+      // fetchData 메서드를 스파이하여 처음 2번은 실패, 3번째는 성공하도록 모킹
+      const fetchSpy = vi.spyOn(service as any, 'fetchData')
+        .mockRejectedValueOnce(new Error('API_ERROR'))
+        .mockRejectedValueOnce(new Error('API_ERROR'))
+        .mockResolvedValueOnce({
+          status: 'SUCCESS',
+          response_data: { plans: [{ carrier: 'SKT', plan_name: 'TEST' }] }
+        });
+
+      mockPrismaService.plan.deleteMany.mockResolvedValue({ count: 1 });
+      mockPrismaService.plan.create.mockResolvedValue({ id: 1 } as any);
+
+      // ingest를 실행 (await 없이 Promise 저장)
+      const ingestPromise = service.ingest('MOCK_CASE_RETRY');
+
+      // 1. 처음 호출 시도 후 실패, 2초(2000ms) 대기
+      await vi.advanceTimersByTimeAsync(2000); 
+
+      // 2. 두 번째 호출 시도 후 실패, 4초(4000ms) 대기 (지수 백오프)
+      await vi.advanceTimersByTimeAsync(4000);
+
+      const result = await ingestPromise;
+      
+      expect(result.success).toBe(true);
+      expect(fetchSpy).toHaveBeenCalledTimes(3);
+      
+      vi.useRealTimers();
+    });
+
+    it('MOCK_CASE_02_API_SERVER_DOWN 에러 케이스가 주어지면 최대 재시도 횟수를 초과하여 결국 예외를 발생시켜야 한다', async () => {
+      vi.useFakeTimers();
+      
+      const fetchSpy = vi.spyOn(service as any, 'fetchData')
+        .mockRejectedValue(new Error('API_ERROR')); // 계속 실패
+
+      const ingestPromise = service.ingest('MOCK_CASE_02_API_SERVER_DOWN');
+      const catchPromise = ingestPromise.catch(e => e); // unhandled rejection 방지
+      
+      await vi.advanceTimersByTimeAsync(2000); // 1차 재시도
+      await vi.advanceTimersByTimeAsync(4000); // 2차 재시도
+      await vi.advanceTimersByTimeAsync(8000); // 3차 재시도 (최대치 초과)
+      await vi.runAllTimersAsync();
+
+      const error = await catchPromise;
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toContain('API_ERROR');
+      
+      expect(fetchSpy).toHaveBeenCalledTimes(4); // 초기 1회 + 재시도 3회
+      
+      vi.useRealTimers();
     });
   });
 

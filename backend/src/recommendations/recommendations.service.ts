@@ -57,13 +57,17 @@ export class RecommendationsService {
     });
   }
 
-  async getRecommendationsPrompt(inputId: string) {
+  async getRecommendationsPrompt(inputId: string, sessionId: string) {
     const session = await this.prisma.inputSession.findUnique({
       where: { id: inputId },
     });
 
     if (!session) {
       throw new NotFoundException('Session data not found for the given input_id');
+    }
+
+    if (session.sessionId !== sessionId) {
+      throw new ForbiddenException('Forbidden. Session ID mismatch.');
     }
 
     // Return mocked AI recommendations for UI validation
