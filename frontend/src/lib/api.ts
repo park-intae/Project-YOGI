@@ -60,6 +60,7 @@ export interface RecommendedPlanDto {
   plan_id: string;
   carrier_name: string;
   plan_name: string;
+  plan_url?: string;
   price: number;
   data_allowance: number;
   data_speed_limit: number;

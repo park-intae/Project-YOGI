@@ -98,9 +98,14 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
       <DifferenceCircles rec={rec} idx={idx} />
 
       {/* Action Button */}
-      <button className="w-full mt-8 py-3.5 border border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors">
-        자세히 보기
-      </button>
+        <a 
+          href={rec.plan_url || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full mt-8 block py-3.5 border border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors text-center"
+        >
+          자세히 보기
+        </a>
     </div>
   );
 }

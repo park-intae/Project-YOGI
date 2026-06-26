@@ -137,6 +137,26 @@ export class RecommendationsService {
           data_allowance: 10,
           data_speed_limit: 1,
           expected_savings: 34000,
+        },
+        {
+          rank: 3,
+          plan_id: candidatePlans[2]?.id?.toString() || 'mock-id-3',
+          carrier_name: 'LGU+',
+          plan_name: '5G 라이트+',
+          price: 47000,
+          data_allowance: 12,
+          data_speed_limit: 1,
+          expected_savings: 42000,
+        },
+        {
+          rank: 4,
+          plan_id: candidatePlans[3]?.id?.toString() || 'mock-id-4',
+          carrier_name: '알뜰폰(SKT망)',
+          plan_name: '5G 안심 15GB+',
+          price: 33000,
+          data_allowance: 15,
+          data_speed_limit: 3,
+          expected_savings: 56000,
         }
       ]
     };
