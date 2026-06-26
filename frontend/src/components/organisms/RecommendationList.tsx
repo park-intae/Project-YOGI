@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import RecommendationCard from '@/components/molecules/RecommendationCard';
+import ConcentricDonutChart from '@/components/atoms/ConcentricDonutChart';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
 export default function RecommendationList({ recommendations, currentFee }: { recommendations: any[], currentFee: number }) {
@@ -9,6 +10,11 @@ export default function RecommendationList({ recommendations, currentFee }: { re
   
   const topRecommendations = recommendations.slice(0, 3);
   const otherRecommendations = recommendations.slice(3);
+
+  // Temporary dummy values for current plan (until DTO provides actual differences)
+  const currentData = 50; 
+  const currentVoice = 9999;
+  const currentSms = 9999;
 
   return (
     <>
@@ -57,7 +63,13 @@ export default function RecommendationList({ recommendations, currentFee }: { re
                       <div className="flex items-center justify-between xl:justify-center w-full xl:w-5/12 space-x-4 md:space-x-8">
                         {/* Data */}
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full border-[5px] border-blue-500"></div>
+                          <ConcentricDonutChart 
+                            currentValue={currentData} 
+                            recommendedValue={rec.data_allowance} 
+                            label="" 
+                            colorHex="#3b82f6" 
+                            size={40} 
+                          />
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500 font-bold leading-none">데이터</span>
                             <span className="text-sm font-bold text-gray-800 leading-tight mt-1">{rec.data_allowance === 9999 ? '무제한' : `${rec.data_allowance}GB`}</span>
@@ -65,7 +77,13 @@ export default function RecommendationList({ recommendations, currentFee }: { re
                         </div>
                         {/* Voice */}
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full border-[5px] border-green-500"></div>
+                          <ConcentricDonutChart 
+                            currentValue={currentVoice} 
+                            recommendedValue={9999} 
+                            label="" 
+                            colorHex="#22c55e" 
+                            size={40} 
+                          />
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500 font-bold leading-none">통화</span>
                             <span className="text-sm font-bold text-gray-800 leading-tight mt-1">무제한</span>
@@ -73,7 +91,13 @@ export default function RecommendationList({ recommendations, currentFee }: { re
                         </div>
                         {/* SMS */}
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full border-[5px] border-orange-400"></div>
+                          <ConcentricDonutChart 
+                            currentValue={currentSms} 
+                            recommendedValue={9999} 
+                            label="" 
+                            colorHex="#fb923c" 
+                            size={40} 
+                          />
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500 font-bold leading-none">문자</span>
                             <span className="text-sm font-bold text-gray-800 leading-tight mt-1">기본제공</span>

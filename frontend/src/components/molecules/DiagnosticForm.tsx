@@ -12,6 +12,9 @@ export default function DiagnosticForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState<'current' | 'custom'>('current');
+  const [isDataUnlimited, setIsDataUnlimited] = useState(true);
+  const [isVoiceUnlimited, setIsVoiceUnlimited] = useState(true);
+  const [isSmsUnlimited, setIsSmsUnlimited] = useState(true);
 
   const defaultCarrier = searchParams.get('carrier_type') || 'SKT';
 
@@ -34,8 +37,8 @@ export default function DiagnosticForm() {
           actual_carrier: carrier,
           actual_plan_name: planName,
           actual_monthly_fee: Number(baseFee.replace(/[^0-9]/g, '')) || 0,
-          actual_data_usage: dataAllowanceGb === '무제한' ? 9999 : Number(dataAllowanceGb),
-          actual_voice_usage: voiceAllowanceMin === '무제한' ? 9999 : Number(voiceAllowanceMin),
+          actual_data_usage: isDataUnlimited ? 9999 : (Number(dataAllowanceGb) || 0),
+          actual_voice_usage: isVoiceUnlimited ? 9999 : (Number(voiceAllowanceMin) || 0),
         }
       });
       router.push(`/?input_id=${response.id}`);
@@ -105,30 +108,36 @@ export default function DiagnosticForm() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 ml-1">데이터</label>
-              <select name="dataAllowanceGb" defaultValue="무제한" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium">
-                <option value="무제한">무제한</option>
-                <option value="100">100GB</option>
-                <option value="50">50GB</option>
-                <option value="10">10GB</option>
-              </select>
+              <div className="flex justify-between items-center ml-1 mb-1">
+                <label className="text-xs font-semibold text-gray-500">데이터 (GB)</label>
+                <label className="flex items-center space-x-1 cursor-pointer">
+                  <input type="checkbox" checked={isDataUnlimited} onChange={(e) => setIsDataUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
+                  <span className="text-[10px] text-gray-500 font-semibold">무제한</span>
+                </label>
+              </div>
+              <input name="dataAllowanceGb" type="number" min="0" disabled={isDataUnlimited} placeholder="예: 100" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium disabled:bg-gray-100 disabled:text-gray-400" />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 ml-1">통화</label>
-              <select name="voiceAllowanceMin" defaultValue="무제한" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium">
-                <option value="무제한">무제한</option>
-                <option value="300">300분</option>
-                <option value="100">100분</option>
-              </select>
+              <div className="flex justify-between items-center ml-1 mb-1">
+                <label className="text-xs font-semibold text-gray-500">통화 (분)</label>
+                <label className="flex items-center space-x-1 cursor-pointer">
+                  <input type="checkbox" checked={isVoiceUnlimited} onChange={(e) => setIsVoiceUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
+                  <span className="text-[10px] text-gray-500 font-semibold">무제한</span>
+                </label>
+              </div>
+              <input name="voiceAllowanceMin" type="number" min="0" disabled={isVoiceUnlimited} placeholder="예: 300" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium disabled:bg-gray-100 disabled:text-gray-400" />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 ml-1">문자</label>
-              <select name="smsAllowance" defaultValue="기본제공" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium">
-                <option value="기본제공">기본제공</option>
-                <option value="300">300건</option>
-              </select>
+              <div className="flex justify-between items-center ml-1 mb-1">
+                <label className="text-xs font-semibold text-gray-500">문자 (건)</label>
+                <label className="flex items-center space-x-1 cursor-pointer">
+                  <input type="checkbox" checked={isSmsUnlimited} onChange={(e) => setIsSmsUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
+                  <span className="text-[10px] text-gray-500 font-semibold">기본제공</span>
+                </label>
+              </div>
+              <input name="smsAllowance" type="number" min="0" disabled={isSmsUnlimited} placeholder="예: 300" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium disabled:bg-gray-100 disabled:text-gray-400" />
             </div>
           </div>
 
