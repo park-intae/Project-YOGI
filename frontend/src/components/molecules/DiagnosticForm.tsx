@@ -41,7 +41,7 @@ export default function DiagnosticForm() {
           actual_voice_usage: isVoiceUnlimited ? 9999 : (Number(voiceAllowanceMin) || 0),
         }
       });
-      router.push(`/?input_id=${response.id}`);
+      router.push(`/?input_id=${response.id}`, { scroll: false });
     } catch (error: any) {
       console.error('Failed to create session:', error);
       setError(error.response?.data?.message || '서버 통신에 실패했습니다. 다시 시도해주세요.');
@@ -50,30 +50,12 @@ export default function DiagnosticForm() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+    <div id="step-form" className="w-full max-w-6xl mx-auto px-4 py-8">
       {/* Header Area in Design */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">나에게 딱 맞는 요금제를 찾아보세요</h1>
-          <p className="text-gray-600">현재 사용 정보를 입력하거나, 원하는 옵션을 선택해 주세요.</p>
-        </div>
-        
-        {/* Progress Steps */}
-        <div className="flex items-center space-x-4 mt-6 md:mt-0 text-sm">
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mb-1 shadow-sm">1</div>
-            <span className="font-semibold text-gray-900">정보 입력</span>
-          </div>
-          <div className="w-12 h-[1px] bg-gray-300 -mt-6"></div>
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold mb-1">2</div>
-            <span className="text-gray-400">AI 추천 요금제</span>
-          </div>
-          <div className="w-12 h-[1px] bg-gray-300 -mt-6"></div>
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold mb-1">3</div>
-            <span className="text-gray-400">비교 및 선택</span>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">나에게 딱 맞는 요금제를 찾아보세요</h1>
+          <p className="text-gray-600 dark:text-gray-400">현재 사용 정보를 입력하거나, 원하는 옵션을 선택해 주세요.</p>
         </div>
       </div>
 
@@ -84,12 +66,12 @@ export default function DiagnosticForm() {
       </div>
 
       {/* Input Form */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 shadow-sm mb-8">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 md:p-8 shadow-sm mb-8">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 ml-1">통신사 선택</label>
-              <select name="carrier" defaultValue={defaultCarrier} className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-2">통신사 선택</label>
+              <select name="carrier" defaultValue={defaultCarrier} className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all cursor-pointer appearance-none">
                 <option value="SKT">SKT</option>
                 <option value="KT">KT</option>
                 <option value="LGU+">LG U+</option>
@@ -97,47 +79,47 @@ export default function DiagnosticForm() {
               </select>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 ml-1">현재 요금제</label>
-              <input name="planName" type="text" defaultValue="5GX 프라임" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium" />
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-2">현재 요금제</label>
+              <input name="planName" type="text" defaultValue="5GX 프라임" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all" />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 ml-1">월 요금</label>
-              <input name="baseFee" type="text" defaultValue="89000" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium" />
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-2">월 요금 (원)</label>
+              <input name="baseFee" type="text" defaultValue="89,000" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all" />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1 mb-1">
-                <label className="text-xs font-semibold text-gray-500">데이터 (GB)</label>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center ml-2 mb-1">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">데이터 (GB)</label>
                 <label className="flex items-center space-x-1 cursor-pointer">
                   <input type="checkbox" checked={isDataUnlimited} onChange={(e) => setIsDataUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
-                  <span className="text-[10px] text-gray-500 font-semibold">무제한</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">무제한</span>
                 </label>
               </div>
-              <input name="dataAllowanceGb" type="number" min="0" disabled={isDataUnlimited} placeholder="예: 100" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium disabled:bg-gray-100 disabled:text-gray-400" />
+              <input name="dataAllowanceGb" type="number" min="0" disabled={isDataUnlimited} placeholder="예: 100" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all disabled:opacity-50" />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1 mb-1">
-                <label className="text-xs font-semibold text-gray-500">통화 (분)</label>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center ml-2 mb-1">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">통화 (분)</label>
                 <label className="flex items-center space-x-1 cursor-pointer">
                   <input type="checkbox" checked={isVoiceUnlimited} onChange={(e) => setIsVoiceUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
-                  <span className="text-[10px] text-gray-500 font-semibold">무제한</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">무제한</span>
                 </label>
               </div>
-              <input name="voiceAllowanceMin" type="number" min="0" disabled={isVoiceUnlimited} placeholder="예: 300" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium disabled:bg-gray-100 disabled:text-gray-400" />
+              <input name="voiceAllowanceMin" type="number" min="0" disabled={isVoiceUnlimited} placeholder="예: 300" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all disabled:opacity-50" />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1 mb-1">
-                <label className="text-xs font-semibold text-gray-500">문자 (건)</label>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center ml-2 mb-1">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">문자 (건)</label>
                 <label className="flex items-center space-x-1 cursor-pointer">
                   <input type="checkbox" checked={isSmsUnlimited} onChange={(e) => setIsSmsUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
-                  <span className="text-[10px] text-gray-500 font-semibold">기본제공</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">기본제공</span>
                 </label>
               </div>
-              <input name="smsAllowance" type="number" min="0" disabled={isSmsUnlimited} placeholder="예: 300" className="w-full p-3.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-medium disabled:bg-gray-100 disabled:text-gray-400" />
+              <input name="smsAllowance" type="number" min="0" disabled={isSmsUnlimited} placeholder="예: 300" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all disabled:opacity-50" />
             </div>
           </div>
 

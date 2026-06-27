@@ -23,7 +23,7 @@ describe('RecommendationCard component', () => {
 
   it('renders saving amount if diff > 0', () => {
     render(<RecommendationCard idx={0} rec={mockRec} currentFee={100000} />);
-    expect(screen.getByText(/11,000원 절약/)).toBeInTheDocument();
-    expect(screen.getByText(/132,000원 절약/)).toBeInTheDocument();
+    expect(screen.getByText(/11,000/)).toBeInTheDocument();
+    expect(screen.getByText(/132,000/)).toBeInTheDocument();
   });
 });

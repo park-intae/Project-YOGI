@@ -72,9 +72,9 @@ describe('Recommendations API (e2e)', () => {
     let inputId: string;
     const sessionId = 'session-test-123';
 
-    it('POST /api/v1/recommandations - 사용자 조건을 입력하여 input_id 발급', async () => {
+    it('POST /api/v1/recommendations - 사용자 조건을 입력하여 input_id 발급', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/v1/recommandations')
+        .post('/api/v1/recommendations')
         .set('X-Session-ID', sessionId)
         .send({
           input_type: 'DEMAND',
@@ -107,7 +107,7 @@ describe('Recommendations API (e2e)', () => {
 
     it('사용자 A가 조건을 입력하여 세션 생성', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/v1/recommandations')
+        .post('/api/v1/recommendations')
         .set('X-Session-ID', sessionId1)
         .send({
           input_type: 'PLAN',

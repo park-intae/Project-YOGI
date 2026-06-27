@@ -27,19 +27,19 @@ export default function OptionCard({ mode, selectedMode, onClick }: OptionCardPr
     <button 
       type="button"
       onClick={onClick}
-      className={`flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50/30' : 'border-gray-100 bg-white hover:border-gray-200'}`}
+      className={`flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50/30 dark:bg-blue-900/20' : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-200 dark:hover:border-slate-700'}`}
     >
       <div className="flex items-start">
         <div className="mt-1 mr-4">
-          <div className={`w-5 h-5 rounded-full border-[5px] ${isSelected ? 'border-blue-600' : 'border-gray-200 bg-white'}`}></div>
+          <div className={`w-5 h-5 rounded-full border-[5px] ${isSelected ? 'border-blue-600' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900'}`}></div>
         </div>
         <div className="text-left">
-          <h3 className={`text-lg font-bold mb-1 ${isSelected ? 'text-blue-600' : 'text-gray-700'}`}>{content.title}</h3>
-          <p className="text-gray-500 text-sm whitespace-pre-line">{content.description}</p>
+          <h3 className={`text-lg font-bold mb-1 ${isSelected ? 'text-blue-600' : 'text-gray-700 dark:text-gray-200'}`}>{content.title}</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm whitespace-pre-line">{content.description}</p>
         </div>
       </div>
       <div className="hidden sm:block">
-        <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${isSelected ? 'bg-blue-100 text-blue-500' : 'bg-gray-50 text-gray-400'}`}>
+        <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${isSelected ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-500 dark:text-blue-400' : 'bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500'}`}>
           {content.icon}
         </div>
       </div>

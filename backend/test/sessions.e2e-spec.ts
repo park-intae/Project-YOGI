@@ -26,9 +26,9 @@ describe('RecommendationsController (e2e)', () => {
     await app.close();
   });
 
-  it('/api/v1/recommandations (POST) - should fail if X-Session-ID is missing', () => {
+  it('/api/v1/recommendations (POST) - should fail if X-Session-ID is missing', () => {
     return request(app.getHttpServer())
-      .post('/api/v1/recommandations')
+      .post('/api/v1/recommendations')
       .send({
         input_type: 'PLAN',
         current_plan: {
@@ -42,9 +42,9 @@ describe('RecommendationsController (e2e)', () => {
       .expect(401);
   });
 
-  it('/api/v1/recommandations (POST) - should fail if body has neither current_plan nor demand_condition', () => {
+  it('/api/v1/recommendations (POST) - should fail if body has neither current_plan nor demand_condition', () => {
     return request(app.getHttpServer())
-      .post('/api/v1/recommandations')
+      .post('/api/v1/recommendations')
       .set('X-Session-ID', '123e4567-e89b-12d3-a456-426614174000')
       .send({
         input_type: 'BOTH'
@@ -52,10 +52,10 @@ describe('RecommendationsController (e2e)', () => {
       .expect(400);
   });
 
-  it('/api/v1/recommandations (POST) - should create session with current_plan and demand_condition', async () => {
+  it('/api/v1/recommendations (POST) - should create session with current_plan and demand_condition', async () => {
     const sessionId = '123e4567-e89b-12d3-a456-426614174000';
     const response = await request(app.getHttpServer())
-      .post('/api/v1/recommandations')
+      .post('/api/v1/recommendations')
       .set('X-Session-ID', sessionId)
       .send({
         input_type: 'BOTH',
@@ -84,7 +84,7 @@ describe('RecommendationsController (e2e)', () => {
   it('/api/v1/recommendations/:id (GET) - should generate prompt based on session', async () => {
     const sessionId = '123e4567-e89b-12d3-a456-426614174000';
     const createRes = await request(app.getHttpServer())
-      .post('/api/v1/recommandations')
+      .post('/api/v1/recommendations')
       .set('X-Session-ID', sessionId)
       .send({
         input_type: 'PLAN',

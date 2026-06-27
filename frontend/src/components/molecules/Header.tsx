@@ -1,24 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-[38px] h-[38px]" />;
+  }
+
+  return (
+    <button
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="p-2 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-700"
+      aria-label="Toggle dark mode"
+    >
+      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+    </button>
+  );
+}
 
 export default function Header() {
   const [showHelp, setShowHelp] = useState(false);
 
   return (
-    <header className="w-full bg-white border-b border-gray-100 py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+    <header className="w-full bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 py-4 px-6 flex justify-between items-center sticky top-0 z-10 transition-colors">
       <div className="flex items-center space-x-2">
         <Link href="/" className="flex items-center space-x-2">
           <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs">Y</div>
-          <span className="font-bold text-xl tracking-tight text-gray-900">요금제 비교</span>
+          <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">요금제 비교</span>
         </Link>
       </div>
-      <div className="relative">
+      <div className="flex items-center space-x-3 relative">
+        <ThemeToggle />
         <button 
           onClick={() => setShowHelp(!showHelp)}
-          className="flex items-center text-gray-600 text-sm font-medium border border-gray-200 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors bg-white"
+          className="flex items-center text-gray-600 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-slate-700 rounded-full px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors bg-white dark:bg-slate-900"
         >
           <HelpCircle size={16} className="mr-1.5" /> 이용 방법
         </button>

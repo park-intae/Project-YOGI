@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -27,6 +27,7 @@ apiClient.interceptors.request.use((config) => {
   if (sessionId) {
     config.headers['X-Session-ID'] = sessionId;
   }
+  console.log('[Axios Request]', config.method?.toUpperCase(), config.baseURL, config.url);
   return config;
 });
 
@@ -83,7 +84,7 @@ export interface PlanFilterParams {
 
 export const yogiApi = {
   createSession: async (data: CreateSessionDto): Promise<SessionResponseDto> => {
-    const response = await apiClient.post<SessionResponseDto>('/v1/recommandations', data);
+    const response = await apiClient.post<SessionResponseDto>('/v1/recommendations', data);
     return response.data;
   },
   

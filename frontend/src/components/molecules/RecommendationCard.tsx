@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import ConcentricDonutChart from '../atoms/ConcentricDonutChart';
+import CountUp from '../atoms/CountUp';
 import { RecommendedPlanDto } from '../../lib/api';
 
 interface RecommendationCardProps {
@@ -17,7 +18,7 @@ function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number 
   return (
     <div className="flex justify-between items-start mt-6 px-2">
       <div className="flex flex-col items-center">
-        <span className="text-xs font-bold text-gray-700 mb-2">데이터</span>
+        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">데이터</span>
         <ConcentricDonutChart 
           currentValue={currentData} 
           recommendedValue={rec.data_allowance} 
@@ -26,13 +27,13 @@ function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number 
           size={56} 
         />
         {/* Mock comparison text */}
-        <span className="text-[11px] font-bold text-gray-600 mt-2">
+        <span className="text-[11px] font-bold text-gray-600 dark:text-gray-400 dark:text-slate-500 mt-2">
           {rec.data_allowance === currentData ? '동일' : rec.data_allowance > currentData ? '▲ 증가' : '▼ 절감'}
         </span>
       </div>
       
       <div className="flex flex-col items-center">
-        <span className="text-xs font-bold text-gray-700 mb-2">통화</span>
+        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">통화</span>
         <ConcentricDonutChart 
           currentValue={currentVoice} 
           recommendedValue={9999} // Assuming unlimited for now
@@ -40,11 +41,11 @@ function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number 
           colorHex="#22c55e" 
           size={56} 
         />
-        <span className="text-[11px] font-bold text-gray-600 mt-2">동일</span>
+        <span className="text-[11px] font-bold text-gray-600 dark:text-gray-400 dark:text-slate-500 mt-2">동일</span>
       </div>
 
       <div className="flex flex-col items-center">
-        <span className="text-xs font-bold text-gray-700 mb-2">문자</span>
+        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">문자</span>
         <ConcentricDonutChart 
           currentValue={currentSms} 
           recommendedValue={9999} // Assuming unlimited for now
@@ -52,7 +53,7 @@ function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number 
           colorHex="#fb923c" 
           size={56} 
         />
-        <span className="text-[11px] font-bold text-gray-600 mt-2">동일</span>
+        <span className="text-[11px] font-bold text-gray-600 dark:text-gray-400 dark:text-slate-500 mt-2">동일</span>
       </div>
     </div>
   );
@@ -63,20 +64,20 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
   const isSame = rec.expected_savings === 0;
 
   // Set medal styles based on rank (idx 0 = Gold, 1 = Silver, 2 = Bronze)
-  let borderClass = 'border border-gray-200 shadow-sm';
-  let badgeClass = 'bg-gray-100 text-gray-500';
+  let borderClass = 'border border-gray-200 dark:border-slate-700 shadow-sm';
+  let badgeClass = 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:text-slate-500';
   let medalLabel = null;
 
   if (idx === 0) {
-    borderClass = 'border-2 border-yellow-400 shadow-md shadow-yellow-100 bg-gradient-to-b from-yellow-50/30 to-white';
+    borderClass = 'border-2 border-yellow-400 shadow-md shadow-yellow-100 bg-white dark:bg-slate-900';
     badgeClass = 'bg-yellow-400 text-yellow-900 shadow-sm';
     medalLabel = <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded shadow-sm">👑 1위 강력추천</span>;
   } else if (idx === 1) {
-    borderClass = 'border-2 border-gray-300 shadow-md shadow-gray-100 bg-gradient-to-b from-gray-50/50 to-white';
-    badgeClass = 'bg-gray-300 text-gray-800 shadow-sm';
-    medalLabel = <span className="bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1 rounded">🥈 2위</span>;
+    borderClass = 'border-2 border-gray-300 shadow-md shadow-gray-100 bg-white dark:bg-slate-900';
+    badgeClass = 'bg-gray-300 text-gray-800 dark:text-gray-200 shadow-sm';
+    medalLabel = <span className="bg-gray-200 text-gray-700 dark:text-gray-300 text-xs font-bold px-3 py-1 rounded">🥈 2위</span>;
   } else if (idx === 2) {
-    borderClass = 'border-2 border-amber-500 shadow-md shadow-amber-100 bg-gradient-to-b from-amber-50/20 to-white';
+    borderClass = 'border-2 border-amber-500 shadow-md shadow-amber-100 bg-white dark:bg-slate-900';
     badgeClass = 'bg-amber-500 text-white shadow-sm';
     medalLabel = <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded">🥉 3위</span>;
   }
@@ -91,7 +92,7 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
           </div>
           <div className="flex items-center space-x-1">
             <div className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[8px] font-bold">T</div>
-            <span className="text-sm font-semibold text-gray-600">{rec.carrier_name}</span>
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 dark:text-slate-500">{rec.carrier_name}</span>
           </div>
         </div>
         {medalLabel}
@@ -99,26 +100,26 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
 
       {/* Plan Name & Price */}
       <div className="text-center mb-4">
-        <h3 className="text-lg font-bold text-gray-900">{rec.plan_name}</h3>
-        <p className="text-2xl font-bold text-gray-900 mt-2">월 {rec.price.toLocaleString()}원</p>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{rec.plan_name}</h3>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">월 {rec.price.toLocaleString()}원</p>
       </div>
 
       {/* Highlight Box */}
       {!isSame && (
-        <div className={`rounded-xl py-4 text-center ${isSaving ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+        <div className={`rounded-xl py-4 text-center ${isSaving ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}>
           <p className="font-bold text-lg flex items-center justify-center">
-            월 {Math.abs(rec.expected_savings).toLocaleString()}원 {isSaving ? '절약' : '추가'}
+            월 <CountUp value={Math.abs(rec.expected_savings)} />원 {isSaving ? '절약' : '추가'}
             {isSaving ? <ArrowDown size={18} className="ml-1" /> : <ArrowUp size={18} className="ml-1" />}
           </p>
-          <p className={`text-sm mt-1 ${isSaving ? 'text-red-400' : 'text-blue-400'}`}>연 {(Math.abs(rec.expected_savings) * 12).toLocaleString()}원 {isSaving ? '절약' : '추가'}</p>
+          <p className={`text-sm mt-1 ${isSaving ? 'text-red-400' : 'text-blue-400'}`}>연 <CountUp value={Math.abs(rec.expected_savings) * 12} />원 {isSaving ? '절약' : '추가'}</p>
         </div>
       )}
 
       {/* Divider */}
       <div className="relative flex py-6 items-center">
-        <div className="flex-grow border-t border-gray-200"></div>
-        <span className="flex-shrink-0 mx-4 text-gray-800 text-xs font-bold">현재 요금제와의 차이</span>
-        <div className="flex-grow border-t border-gray-200"></div>
+        <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
+        <span className="flex-shrink-0 mx-4 text-gray-800 dark:text-gray-200 text-xs font-bold">현재 요금제와의 차이</span>
+        <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
       </div>
 
       {/* Circles */}

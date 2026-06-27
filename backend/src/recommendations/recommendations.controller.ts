@@ -10,7 +10,7 @@ import { SessionId } from '../common/decorators/session-id.decorator';
 export class RecommendationsController {
   constructor(private readonly recommendationsService: RecommendationsService) {}
 
-  @Post('recommandations')
+  @Post('recommendations')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(SessionGuard)
   @ApiOperation({ summary: 'Save anonymous polymorphic session data' })
