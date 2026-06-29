@@ -21,3 +21,15 @@
 - **문제 발생**: 백엔드 E2E 테스트(`recommendations.e2e-spec.ts` 등) 실행 시 201 Created를 기대했으나 404 Not Found가 반환됨.
 - **원인**: 과거 테스트 코드 작성 시 API 엔드포인트에 오타(`/api/v1/recommandations`)가 포함되어 있었음.
 - **해결 방안**: 테스트 코드 내의 모든 `recommandations` 문자열을 올바른 철자인 `recommendations`로 일괄 치환하여 100% 테스트 통과(23/23) 달성.
+
+## 4. 잘못된 UUID 파라미터로 인한 500 Internal Server Error
+- **문제 발생**: 폼 제출 직후 프론트엔드 라우팅 시 백엔드 추천 API에서 500 내부 서버 오류 발생.
+- **원인**: 폼 제출 응답 구조의 변경이나 타이밍 문제로 `input_id`가 할당되지 않은 채 라우팅이 되어, 주소창에 `?input_id=undefined`라는 문자열 리터럴이 들어감. 이를 받은 백엔드 Prisma 엔진이 `"undefined"`를 파싱하려다 UUID 형식이 아니라며 예외를 발생시킴.
+- **해결 방안**: 
+  - 백엔드: NestJS 컨트롤러 파라미터에 `ParseUUIDPipe({ version: '4' })`를 부착하여 잘못된 요청을 400 Bad Request로 안전하게 방어.
+  - 프론트엔드: `RecommendationContentClient` 내부에서 `inputId === 'undefined'`일 때 API 호출을 차단하도록 조건문 강화.
+
+## 5. Next.js 로컬 이미지 Cache-Busting 런타임 에러
+- **문제 발생**: 텍스트 통신사 로고를 실제 이미지로 교체하는 과정에서 브라우저 캐시를 회피하기 위해 `<Image src="/brand_logo/KT.jpg?v=2" />` 처럼 쿼리 스트링을 붙였더니 런타임 에러 발생.
+- **원인**: Next.js 14+의 `<Image>` 컴포넌트는 `next.config`의 `images.localPatterns`에 명시적으로 허용되지 않은 쿼리 파라미터가 포함된 로컬 에셋의 렌더링을 보안 및 최적화 이슈로 강력하게 차단함.
+- **해결 방안**: 꼼수를 쓰는 대신 원본 파일 자체를 `.png`로 교체 저장하여 파일 확장자를 변경, 브라우저가 자연스럽게 새 파일로 인식하고 정상 캐싱하도록 조치함.
