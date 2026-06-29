@@ -1,10 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import RecommendationCard from '@/components/molecules/RecommendationCard';
 import ConcentricDonutChart from '@/components/atoms/ConcentricDonutChart';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import AccordionReveal from '@/components/molecules/AccordionReveal';
+
+const getLogoSrc = (name: string) => {
+  if (name?.includes('SKT')) return '/brand_logo/SKT.png';
+  if (name?.includes('KT')) return '/brand_logo/KT.png';
+  if (name?.includes('LGU+') || name?.includes('LG U+')) return '/brand_logo/LG_U+.png';
+  return '/brand_logo/SKT.png';
+};
 
 export default function RecommendationList({ recommendations, currentFee }: { recommendations: any[], currentFee: number }) {
   const [showAll, setShowAll] = useState(false);
@@ -21,10 +29,10 @@ export default function RecommendationList({ recommendations, currentFee }: { re
     
     switch (carrierFilter) {
       case 'SKT': return name.includes('SKT') && !isAlteul;
-      case 'KT': return name.includes('KT') && !isAlteul;
+      case 'KT': return name.includes('KT') && !name.includes('SKT') && !isAlteul;
       case 'LGU+': return (name.includes('LGU+') || name.includes('LG U+')) && !isAlteul;
       case '알뜰폰 SKT': return isAlteul && name.includes('SKT');
-      case '알뜰폰 KT': return isAlteul && name.includes('KT');
+      case '알뜰폰 KT': return isAlteul && name.includes('KT') && !name.includes('SKT');
       case '알뜰폰 LGU+': return isAlteul && (name.includes('LGU+') || name.includes('LG U+'));
       default: return true;
     }
@@ -87,8 +95,8 @@ export default function RecommendationList({ recommendations, currentFee }: { re
                         {/* Carrier and Plan Name */}
                         <div className="flex items-center space-x-4 w-full xl:w-1/4">
                           <div className="flex items-center space-x-2 shrink-0">
-                            <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                              {rec.carrier_name?.includes('SKT') ? 'S' : rec.carrier_name?.includes('KT') ? 'K' : 'L'}
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-slate-700 shadow-sm bg-white flex items-center justify-center">
+                              <Image src={getLogoSrc(rec.carrier_name)} alt={rec.carrier_name || 'Carrier Logo'} fill sizes="32px" className="object-contain p-[5px]" />
                             </div>
                             <span className="text-base font-bold text-gray-700 dark:text-gray-300">{rec.carrier_name}</span>
                           </div>

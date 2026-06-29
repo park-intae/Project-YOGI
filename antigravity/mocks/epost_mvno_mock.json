@@ -1,5 +1,5 @@
 {
-  "description": "Project YOGI - 스마트초이스 API 연동 및 Software 2.0 회복 탄력성 테스트용 모크 데이터",
+  "description": "Project YOGI - 우체국 알뜰폰 공공 API 연동 및 Software 2.0 회복 탄력성 테스트용 모크 데이터",
   "mocks": [
     {
       "case_id": "MOCK_CASE_01_SUCCESS",
@@ -34,8 +34,8 @@
       "status": "ERROR",
       "http_status": 503,
       "response_data": {
-        "error_code": "SMART_CHOICE_MAINTENANCE",
-        "message": "스마트초이스 오픈 API 서버 정기 점검 중입니다. (00:00 ~ 04:00)",
+        "error_code": "EPOST_MVNO_MAINTENANCE",
+        "message": "우체국 알뜰폰 공공 API 서버 정기 점검 중입니다. (00:00 ~ 04:00)",
         "timestamp": "2026-06-19T01:00:00Z"
       }
     },
@@ -53,7 +53,7 @@
             "base_fee": "69,000원(부가세포함)", 
             "data_allowance_gb": "매일5GB+소진시5Mbps",
             "voice_allowance_min": "집/이동전화 무제한(영상/부가300분)",
-            "raw_description": "스마트초이스에서 이따금 던져주는 파싱하기 까다로운 지저분한 레거시 문자열 포맷 예시"
+            "raw_description": "우체국 알뜰폰 공공 API에서 이따금 던져주는 파싱하기 까다로운 지저분한 레거시 문자열 포맷 예시"
           }
         ]
       }

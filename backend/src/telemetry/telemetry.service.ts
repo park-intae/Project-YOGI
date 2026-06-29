@@ -3,12 +3,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Cron } from '@nestjs/schedule';
 import * as fs from 'fs';
 import * as path from 'path';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { XMLParser } from 'fast-xml-parser';
 
 @Injectable()
 export class TelemetryService {
   private readonly logger = new Logger(TelemetryService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly httpService: HttpService,
+  ) {}
 
   /**
    * 매일 새벽 4시에 실행되어 원천 데이터를 수집(Ingest)하고 정제(Transform)하는 크론 배치 파이프라인입니다.
@@ -30,30 +36,95 @@ export class TelemetryService {
   }
 
   /**
-   * 외부 API 호출을 모사(Mock)하는 메서드
-   * @param targetCaseId 시뮬레이션할 Mock Case ID
+   * 외부 API를 호출하여 요금제 데이터를 가져오는 메서드
+   * @param targetCaseId 환경 변수나 매개변수로 전달된 타겟 설정
    */
   async fetchData(targetCaseId: string): Promise<any> {
-    const mockFilePath = path.join(process.cwd(), '../antigravity/mocks/smartchoice_mock.json');
-    if (!fs.existsSync(mockFilePath)) {
-      throw new Error(`Mock file not found at ${mockFilePath}`);
+    const apiUrl = process.env.EXTERNAL_PLAN_API_URL;
+    const apiKey = process.env.EXTERNAL_PLAN_API_KEY;
+    
+    // 외부 API URL이 정의되어 있지 않은 경우 기존 Mock 데이터를 사용 (하위 호환 및 테스트 목적)
+    if (!apiUrl) {
+      this.logger.warn('[Ingest] EXTERNAL_PLAN_API_URL is not set. Falling back to mock data.');
+      const mockFilePath = path.join(process.cwd(), '../antigravity/mocks/epost_mvno_mock.json');
+      if (!fs.existsSync(mockFilePath)) {
+        throw new Error(`Mock file not found at ${mockFilePath}`);
+      }
+
+      const mockFileContent = fs.readFileSync(mockFilePath, 'utf-8');
+      const mockData = JSON.parse(mockFileContent);
+      const selectedCase = mockData.mocks.find((m: any) => m.case_id === targetCaseId);
+
+      if (!selectedCase) {
+        throw new Error(`Mock case not found: ${targetCaseId}`);
+      }
+
+      if (selectedCase.status === 'ERROR') {
+        this.logger.error(`[Ingest] Mock API Error occurred. HTTP Status: ${selectedCase.http_status}`);
+        throw new Error(`API_ERROR: ${selectedCase.response_data.message || 'Unknown error'}`);
+      }
+
+      return selectedCase;
     }
 
-    const mockFileContent = fs.readFileSync(mockFilePath, 'utf-8');
-    const mockData = JSON.parse(mockFileContent);
-    const selectedCase = mockData.mocks.find((m: any) => m.case_id === targetCaseId);
+    // 실제 외부 API 호출 로직
+    this.logger.log(`[Ingest] Fetching data from external API: ${apiUrl}`);
+    try {
+      // 공공데이터포털 규격에 맞춰 ServiceKey를 URL Query 파라미터로 부착
+      const requestUrl = apiKey ? `${apiUrl}?ServiceKey=${apiKey}` : apiUrl;
 
-    if (!selectedCase) {
-      throw new Error(`Mock case not found: ${targetCaseId}`);
+      const response = await firstValueFrom(
+        this.httpService.get(requestUrl, {
+          timeout: 10000, // 10초 타임아웃
+          headers: {
+            'Accept': 'application/xml, text/xml, */*',
+          },
+          responseType: 'text', // XML 응답을 텍스트로 처리
+        })
+      );
+      
+      // fast-xml-parser를 이용한 파싱
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        parseAttributeValue: true,
+      });
+      const parsedData = parser.parse(response.data);
+      
+      // XML 규격 매핑: AlddlChargeResponse -> alddlCharge 배열
+      const root = parsedData.AlddlChargeResponse;
+      if (!root || !root.cmmMsgHeader || root.cmmMsgHeader.successYN !== 'Y') {
+        throw new Error(`API Response Error or Invalid Format: ${JSON.stringify(root?.cmmMsgHeader || 'Unknown')}`);
+      }
+
+      let rawPlans = root.alddlCharge || [];
+      // 결과가 단건일 경우 객체로 반환되므로 배열 정규화 처리
+      if (!Array.isArray(rawPlans)) {
+        rawPlans = [rawPlans];
+      }
+      
+      // DB가 요구하는 JSON (plans) 포맷으로 매핑
+      const mappedPlans = rawPlans.map((item: any) => ({
+        carrier: item.telecomName,
+        plan_name: item.chargeName,
+        network_type: item.telecomGenerationType,
+        base_fee: String(item.chargeAmount || 0),
+        data_allowance_gb: String(item.dataAmount || 0), // (MB 단위이나 기존 DB 컬럼 명칭 유지)
+        voice_allowance_min: String(item.voiceAmount || 0),
+        raw_description: JSON.stringify(item),
+      }));
+
+      return {
+        status: 'SUCCESS',
+        http_status: response.status,
+        response_data: {
+          total_count: mappedPlans.length,
+          plans: mappedPlans
+        }
+      };
+    } catch (error) {
+      this.logger.error(`[Ingest] External API Error occurred: ${error.message}`);
+      throw new Error(`API_ERROR: ${error.message}`);
     }
-
-    // 2. 에러 케이스 처리 (지수 백오프 테스트를 유발하기 위해 에러를 고의로 발생시킴)
-    if (selectedCase.status === 'ERROR') {
-      this.logger.error(`[Ingest] Mock API Error occurred. HTTP Status: ${selectedCase.http_status}`);
-      throw new Error(`API_ERROR: ${selectedCase.response_data.message || 'Unknown error'}`);
-    }
-
-    return selectedCase;
   }
 
   /**

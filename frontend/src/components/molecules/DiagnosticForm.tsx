@@ -90,33 +90,33 @@ export default function DiagnosticForm() {
             </div>
 
             <div className="space-y-1">
-              <div className="flex justify-between items-center ml-2 mb-1">
+              <div className="flex items-center space-x-3 ml-2 mb-1">
                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">데이터 (GB)</label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input type="checkbox" checked={isDataUnlimited} onChange={(e) => setIsDataUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">무제한</span>
+                <label className={`flex items-center px-1.5 py-[1px] rounded-full cursor-pointer transition-all border ${isDataUnlimited ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200 dark:bg-slate-800 dark:border-slate-700 dark:text-gray-400 dark:hover:bg-slate-700'}`}>
+                  <input type="checkbox" checked={isDataUnlimited} onChange={(e) => setIsDataUnlimited(e.target.checked)} className="sr-only" />
+                  <span className="text-[10px] leading-none font-bold tracking-wide mt-[1px]">무제한</span>
                 </label>
               </div>
               <input name="dataAllowanceGb" type="number" min="0" disabled={isDataUnlimited} placeholder="예: 100" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all disabled:opacity-50" />
             </div>
 
             <div className="space-y-1">
-              <div className="flex justify-between items-center ml-2 mb-1">
+              <div className="flex items-center space-x-3 ml-2 mb-1">
                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">통화 (분)</label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input type="checkbox" checked={isVoiceUnlimited} onChange={(e) => setIsVoiceUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">무제한</span>
+                <label className={`flex items-center px-1.5 py-[1px] rounded-full cursor-pointer transition-all border ${isVoiceUnlimited ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200 dark:bg-slate-800 dark:border-slate-700 dark:text-gray-400 dark:hover:bg-slate-700'}`}>
+                  <input type="checkbox" checked={isVoiceUnlimited} onChange={(e) => setIsVoiceUnlimited(e.target.checked)} className="sr-only" />
+                  <span className="text-[10px] leading-none font-bold tracking-wide mt-[1px]">무제한</span>
                 </label>
               </div>
               <input name="voiceAllowanceMin" type="number" min="0" disabled={isVoiceUnlimited} placeholder="예: 300" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all disabled:opacity-50" />
             </div>
 
             <div className="space-y-1">
-              <div className="flex justify-between items-center ml-2 mb-1">
+              <div className="flex items-center space-x-3 ml-2 mb-1">
                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">문자 (건)</label>
-                <label className="flex items-center space-x-1 cursor-pointer">
-                  <input type="checkbox" checked={isSmsUnlimited} onChange={(e) => setIsSmsUnlimited(e.target.checked)} className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500" />
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">기본제공</span>
+                <label className={`flex items-center px-1.5 py-[1px] rounded-full cursor-pointer transition-all border ${isSmsUnlimited ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200 dark:bg-slate-800 dark:border-slate-700 dark:text-gray-400 dark:hover:bg-slate-700'}`}>
+                  <input type="checkbox" checked={isSmsUnlimited} onChange={(e) => setIsSmsUnlimited(e.target.checked)} className="sr-only" />
+                  <span className="text-[10px] leading-none font-bold tracking-wide mt-[1px]">기본제공</span>
                 </label>
               </div>
               <input name="smsAllowance" type="number" min="0" disabled={isSmsUnlimited} placeholder="예: 300" className="w-full p-2 border border-transparent rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-900 dark:text-white font-bold transition-all disabled:opacity-50" />

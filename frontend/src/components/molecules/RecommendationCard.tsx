@@ -1,3 +1,5 @@
+import React, { memo } from 'react';
+import Image from 'next/image';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import ConcentricDonutChart from '../atoms/ConcentricDonutChart';
 import CountUp from '../atoms/CountUp';
@@ -59,11 +61,18 @@ function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number 
   );
 }
 
-export default function RecommendationCard({ idx, rec, currentFee }: RecommendationCardProps) {
+const getLogoSrc = (name: string) => {
+  if (name?.includes('SKT')) return '/brand_logo/SKT.png';
+  if (name?.includes('KT')) return '/brand_logo/KT.png';
+  if (name?.includes('LGU+') || name?.includes('LG U+')) return '/brand_logo/LG_U+.png';
+  return '/brand_logo/SKT.png';
+};
+
+const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentFee }: RecommendationCardProps) {
   const isSaving = rec.expected_savings > 0;
   const isSame = rec.expected_savings === 0;
+  const isBest = idx === 0;
 
-  // Set medal styles based on rank (idx 0 = Gold, 1 = Silver, 2 = Bronze)
   let borderClass = 'border border-gray-200 dark:border-slate-700 shadow-sm';
   let badgeClass = 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:text-slate-500';
   let medalLabel = null;
@@ -83,15 +92,17 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
   }
 
   return (
-    <div className={`relative rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${borderClass}`}>
+    <div className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col h-full hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] ${borderClass}`}>
       {/* Card Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-3">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${badgeClass}`}>
             {idx + 1}
           </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[8px] font-bold">T</div>
+          <div className="flex items-center space-x-1.5">
+            <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-slate-700 shadow-sm bg-white flex items-center justify-center">
+              <Image src={getLogoSrc(rec.carrier_name)} alt={rec.carrier_name || 'Carrier Logo'} fill sizes="20px" className="object-contain p-[3px]" />
+            </div>
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 dark:text-slate-500">{rec.carrier_name}</span>
           </div>
         </div>
@@ -130,10 +141,12 @@ export default function RecommendationCard({ idx, rec, currentFee }: Recommendat
           href={rec.plan_url || '#'}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full mt-8 block py-3.5 border border-blue-200 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors text-center"
+          className="w-full mt-8 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-4 rounded-xl font-bold transition-all duration-200 active:scale-[0.97]"
         >
           자세히 보기
         </a>
     </div>
   );
-}
+});
+
+export default RecommendationCard;

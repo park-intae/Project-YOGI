@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiHeader, ApiResponse } from '@nestjs/swagger';
 import { RecommendationsService } from './recommendations.service';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -34,7 +34,7 @@ export class RecommendationsController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'Not found.' })
   async getRecommendations(
-    @Param('input_id') inputId: string,
+    @Param('input_id', new ParseUUIDPipe({ version: '4' })) inputId: string,
     @SessionId() sessionId: string,
   ) {
     return this.recommendationsService.getRecommendationsPrompt(inputId, sessionId);

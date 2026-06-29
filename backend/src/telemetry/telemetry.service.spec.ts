@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TelemetryService } from './telemetry.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { HttpService } from '@nestjs/axios';
 
 // PrismaService Mocking
 const mockPrismaService = {
@@ -17,6 +18,11 @@ const mockPrismaService = {
   },
 };
 
+// HttpService Mocking
+const mockHttpService = {
+  get: vi.fn(),
+};
+
 describe('TelemetryService', () => {
   let service: TelemetryService;
 
@@ -28,6 +34,10 @@ describe('TelemetryService', () => {
         {
           provide: PrismaService,
           useValue: mockPrismaService,
+        },
+        {
+          provide: HttpService,
+          useValue: mockHttpService,
         },
       ],
     }).compile();

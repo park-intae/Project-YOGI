@@ -7,7 +7,7 @@ ingestion_pipeline:
   cron: "0 4 * * *"
   step:
     - name: "Fetch Raw Data"
-      source: "SmartChoice API"
+      source: "Korea Post MVNO API (우체국 알뜰폰 공공 API)"
       target: "db.raw_plan_description"
       on_failure: "retry_with_backoff"
       max_retries: 3
@@ -27,5 +27,5 @@ evaluation_loop:
       threshold: "2000ms"
 
   test_harness:
-    mock_data_source: "antigravity/mocks/smartchoice_mock.json"
+    mock_data_source: "antigravity/mocks/epost_mvno_mock.json"
     environment_config: "antigravity/config/pipeline_env.json"

@@ -1,6 +1,6 @@
 {
   "ENVIRONMENT": "development",
-  "SMARTCHOICE_API_BASE_URL": "https://api.smartchoice.or.kr/v1/plans",
+  "EXTERNAL_PLAN_API_URL": "https://api.epost.go.kr/openapi/v1/mvno/plans",
   "TIMEOUT_MS": 5000,
   "DATABASE": {
     "TYPE": "postgres",

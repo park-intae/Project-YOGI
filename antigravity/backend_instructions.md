@@ -21,7 +21,7 @@
 
 ## 2. 외부 데이터 완충(Ingestion Buffer) 및 회복 탄력성
 - **원천 데이터 덤프 처리**:
-  - 스마트초이스 API 등 외부 기관 데이터의 갑작스러운 규격 오염에 대응하기 위해, `Plan` 테이블에 `raw_plan_description (TEXT)` 컬럼을 배치해 원본 데이터를 무조건 1차 백업(Dump)한 뒤 파싱할 것.
+  - 우체국 알뜰폰 API 등 외부 기관 데이터의 갑작스러운 규격 오염에 대응하기 위해, `Plan` 테이블에 `raw_plan_description (TEXT)` 컬럼을 배치해 원본 데이터를 무조건 1차 백업(Dump)한 뒤 파싱할 것.
 - **장애 전파 차단**:
   - 외부 연동 모듈은 완벽히 예외 처리(`try-catch`)되어야 하며, `harness.yaml`에 명시된 지수 백오프(Retry with Backoff) 로직을 적용해 데이터 유실 및 서버 중단을 원천 봉쇄할 것.
 
@@ -30,7 +30,7 @@
 - 모든 Controller와 DTO에는 `@nestjs/swagger` 데코레이터(`@ApiProperty`, `@ApiBody`, `@ApiOperation`)를 100% 반영하여 프론트엔드가 즉시 Mocking 및 인프라 연동을 수행할 수 있도록 할 것.
 
 ## 4. 인프라 실패 및 모의 테스트 전략
-- 비용 낭비 방지 및 네트워크 격리 테스트를 위해 `antigravity/mocks/smartchoice_mock.json`에 정의된 결함 데이터를 활용하는 자가 치유(Self-healing) 로직용 테스트 코드를 `Vitest + Supertest` 조합으로 구성할 것.
+- 비용 낭비 방지 및 네트워크 격리 테스트를 위해 `antigravity/mocks/epost_mvno_mock.json`에 정의된 결함 데이터를 활용하는 자가 치유(Self-healing) 로직용 테스트 코드를 `Vitest + Supertest` 조합으로 구성할 것.
 
 ## 5. Software 2.0 AI 추천 파이프라인 가드레일 (LLM & Prompt)
 - **프롬프트 분리 및 버전 관리**:
