@@ -18,9 +18,11 @@ const mockPrismaService = {
   },
 };
 
+import { of } from 'rxjs';
+
 // HttpService Mocking
 const mockHttpService = {
-  get: vi.fn(),
+  get: vi.fn().mockReturnValue(of({ data: '' })),
 };
 
 describe('TelemetryService', () => {
@@ -48,6 +50,11 @@ describe('TelemetryService', () => {
   describe('ingest', () => {
     it('MOCK_CASE_01_SUCCESS가 주어지면 정상적으로 Plan 1차 덤프를 생성해야 한다', async () => {
       mockPrismaService.plan.upsert.mockResolvedValue({ id: 1 } as any);
+      
+      const fetchSpy = vi.spyOn(service as any, 'fetchData').mockResolvedValue({
+        status: 'SUCCESS',
+        response_data: { plans: [{ carrier: 'SKT', plan_name: 'TEST' }, { carrier: 'KT', plan_name: 'TEST2' }] }
+      });
 
       const result = await service.ingest('MOCK_CASE_01_SUCCESS');
 
@@ -55,6 +62,8 @@ describe('TelemetryService', () => {
       expect(result.count).toBe(2);
       expect(mockPrismaService.$transaction).toHaveBeenCalledTimes(1);
       expect(mockPrismaService.plan.upsert).toHaveBeenCalledTimes(2);
+      
+      fetchSpy.mockRestore();
     });
 
     it('API 에러 발생 시 최대 3회까지 지수 백오프(Retry & Backoff) 로직이 작동해야 한다', async () => {
@@ -123,7 +132,8 @@ describe('TelemetryService', () => {
         dataAllowanceGb: 0,
         voiceAllowanceMin: 0,
         rawPlanDescription: JSON.stringify({
-          carrier: 'LGU_PLUS',
+          carrier: '우체국(큰사람)',
+          base_network: 'LGU+',
           plan_name: '속도 용량 걱정 없는 데이터 하프(MOCK_BUG_DATA)',
           network_type: 'LTE',
           base_fee: '69,000원(부가세포함)',
@@ -145,9 +155,10 @@ describe('TelemetryService', () => {
       expect(mockPrismaService.plan.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: {
-          carrier: 'LGU_PLUS',
+          carrier: '우체국(큰사람)',
           planName: '속도 용량 걱정 없는 데이터 하프(MOCK_BUG_DATA)',
           networkType: 'LTE',
+          baseNetwork: 'LGU+',
           baseFee: 69000,          // 69,000원(부가세포함) -> 69000
           dataAllowanceGb: 5,      // 매일5GB+소진시5Mbps -> 5
           voiceAllowanceMin: 9999,  // 집/이동전화 무제한... -> 9999
@@ -165,7 +176,8 @@ describe('TelemetryService', () => {
         dataAllowanceGb: 0,
         voiceAllowanceMin: 0,
         rawPlanDescription: JSON.stringify({
-          carrier: 'SKT',
+          carrier: '우체국알뜰(모빙)',
+          base_network: 'SKT',
           plan_name: '5G 다이렉트 45',
           network_type: '5G',
           base_fee: 45000,
@@ -185,9 +197,10 @@ describe('TelemetryService', () => {
       expect(mockPrismaService.plan.update).toHaveBeenCalledWith({
         where: { id: 2 },
         data: {
-          carrier: 'SKT',
+          carrier: '우체국알뜰(모빙)',
           planName: '5G 다이렉트 45',
           networkType: '5G',
+          baseNetwork: 'SKT',
           baseFee: 45000,
           dataAllowanceGb: 50,
           voiceAllowanceMin: 9999,

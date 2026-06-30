@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import ConcentricDonutChart from '../atoms/ConcentricDonutChart';
 import CountUp from '../atoms/CountUp';
+import CarrierBadge from '../atoms/CarrierBadge';
 import { RecommendedPlanDto } from '../../lib/api';
 
 interface RecommendationCardProps {
@@ -61,13 +62,6 @@ function DifferenceCircles({ rec, idx }: { rec: RecommendedPlanDto, idx: number 
   );
 }
 
-const getLogoSrc = (name: string) => {
-  if (name?.includes('SKT')) return '/brand_logo/SKT.png';
-  if (name?.includes('KT')) return '/brand_logo/KT.png';
-  if (name?.includes('LGU+') || name?.includes('LG U+')) return '/brand_logo/LG_U+.png';
-  return '/brand_logo/SKT.png';
-};
-
 const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentFee }: RecommendationCardProps) {
   const isSaving = rec.expected_savings > 0;
   const isSame = rec.expected_savings === 0;
@@ -99,12 +93,7 @@ const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentF
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${badgeClass}`}>
             {idx + 1}
           </div>
-          <div className="flex items-center space-x-1.5">
-            <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-slate-700 shadow-sm bg-white flex items-center justify-center">
-              <Image src={getLogoSrc(rec.carrier_name)} alt={rec.carrier_name || 'Carrier Logo'} fill sizes="20px" className="object-contain p-[3px]" />
-            </div>
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 dark:text-slate-500">{rec.carrier_name}</span>
-          </div>
+          <CarrierBadge name={rec.carrier_name} baseNetwork={rec.base_network} size="sm" showName={true} />
         </div>
         {medalLabel}
       </div>

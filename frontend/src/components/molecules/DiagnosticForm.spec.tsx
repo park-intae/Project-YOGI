@@ -22,7 +22,7 @@ describe('DiagnosticForm component', () => {
 
   it('renders form elements', () => {
     render(<DiagnosticForm />);
-    expect(screen.getByText('나에게 딱 맞는 요금제를 찾아보세요')).toBeInTheDocument();
+    expect(screen.getByText('통신 3사 요금 내지 마세요, 알뜰폰으로 반값 할인받기')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /AI 추천 요금제 확인하기/i })).toBeInTheDocument();
   });
 

@@ -12,20 +12,20 @@ const mockPrismaService = {
       inputSession: {
         create: vi.fn().mockImplementation(async ({ data }) => {
           if (data.sessionId === 'session-test-a') {
-            return { id: '00000000-0000-0000-0000-00000000000a', sessionId: data.sessionId };
+            return { id: '00000000-0000-4000-8000-00000000000a', sessionId: data.sessionId };
           }
-          return { id: '11111111-1111-1111-1111-111111111111', sessionId: data.sessionId };
+          return { id: '11111111-1111-4111-8111-111111111111', sessionId: data.sessionId };
         }),
         findUnique: vi.fn().mockImplementation(async ({ where }) => {
-          if (where.id === '11111111-1111-1111-1111-111111111111') {
+          if (where.id === '11111111-1111-4111-8111-111111111111') {
             return {
-              id: '11111111-1111-1111-1111-111111111111',
+              id: '11111111-1111-4111-8111-111111111111',
               sessionId: 'session-test-123', // Mapped from POST create
             };
           }
-          if (where.id === '00000000-0000-0000-0000-00000000000a') {
+          if (where.id === '00000000-0000-4000-8000-00000000000a') {
             return {
-              id: '00000000-0000-0000-0000-00000000000a',
+              id: '00000000-0000-4000-8000-00000000000a',
               sessionId: 'session-test-a',
             };
           }
@@ -39,8 +39,8 @@ const mockPrismaService = {
   }),
   inputSession: {
     findUnique: vi.fn().mockImplementation(async ({ where }) => {
-      if (where.id === '11111111-1111-1111-1111-111111111111') return { id: '11111111-1111-1111-1111-111111111111', sessionId: 'session-test-123' };
-      if (where.id === '00000000-0000-0000-0000-00000000000a') return { id: '00000000-0000-0000-0000-00000000000a', sessionId: 'session-test-a' };
+      if (where.id === '11111111-1111-4111-8111-111111111111') return { id: '11111111-1111-4111-8111-111111111111', sessionId: 'session-test-123' };
+      if (where.id === '00000000-0000-4000-8000-00000000000a') return { id: '00000000-0000-4000-8000-00000000000a', sessionId: 'session-test-a' };
       return null;
     }),
   },

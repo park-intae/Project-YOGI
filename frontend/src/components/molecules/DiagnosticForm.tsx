@@ -54,8 +54,8 @@ export default function DiagnosticForm() {
       {/* Header Area in Design */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">나에게 딱 맞는 요금제를 찾아보세요</h1>
-          <p className="text-gray-600 dark:text-gray-400">현재 사용 정보를 입력하거나, 원하는 옵션을 선택해 주세요.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">통신 3사 요금 내지 마세요, 알뜰폰으로 반값 할인받기</h1>
+          <p className="text-gray-600 dark:text-gray-400">현재 사용 중인 비싼 통신사 요금을 입력하면, 혜택은 그대로면서 가격만 저렴한 알뜰폰 요금제를 찾아드립니다.</p>
         </div>
       </div>
 

@@ -6,13 +6,8 @@ import RecommendationCard from '@/components/molecules/RecommendationCard';
 import ConcentricDonutChart from '@/components/atoms/ConcentricDonutChart';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import AccordionReveal from '@/components/molecules/AccordionReveal';
-
-const getLogoSrc = (name: string) => {
-  if (name?.includes('SKT')) return '/brand_logo/SKT.png';
-  if (name?.includes('KT')) return '/brand_logo/KT.png';
-  if (name?.includes('LGU+') || name?.includes('LG U+')) return '/brand_logo/LG_U+.png';
-  return '/brand_logo/SKT.png';
-};
+import CarrierBadge from '@/components/atoms/CarrierBadge';
+import { getLogoSrc } from '@/lib/carrier';
 
 export default function RecommendationList({ recommendations, currentFee }: { recommendations: any[], currentFee: number }) {
   const [showAll, setShowAll] = useState(false);
@@ -24,16 +19,12 @@ export default function RecommendationList({ recommendations, currentFee }: { re
   const filteredOtherRecommendations = otherRecommendations.filter((rec: any) => {
     if (carrierFilter === '전체') return true;
     
-    const name = rec.carrier_name || '';
-    const isAlteul = name.includes('알뜰');
+    const baseNetwork = rec.base_network || '';
     
     switch (carrierFilter) {
-      case 'SKT': return name.includes('SKT') && !isAlteul;
-      case 'KT': return name.includes('KT') && !name.includes('SKT') && !isAlteul;
-      case 'LGU+': return (name.includes('LGU+') || name.includes('LG U+')) && !isAlteul;
-      case '알뜰폰 SKT': return isAlteul && name.includes('SKT');
-      case '알뜰폰 KT': return isAlteul && name.includes('KT') && !name.includes('SKT');
-      case '알뜰폰 LGU+': return isAlteul && (name.includes('LGU+') || name.includes('LG U+'));
+      case 'SKT망': return baseNetwork.includes('SKT');
+      case 'KT망': return baseNetwork.includes('KT');
+      case 'LGU+망': return baseNetwork.includes('LGU+');
       default: return true;
     }
   });
@@ -43,7 +34,7 @@ export default function RecommendationList({ recommendations, currentFee }: { re
   const currentVoice = 9999;
   const currentSms = 9999;
 
-  const filters = ['전체', 'SKT', 'KT', 'LGU+', '알뜰폰 SKT', '알뜰폰 KT', '알뜰폰 LGU+'];
+  const filters = ['전체', 'SKT망', 'KT망', 'LGU+망'];
 
   return (
     <>
@@ -94,12 +85,7 @@ export default function RecommendationList({ recommendations, currentFee }: { re
                       <div key={idx + 3} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col xl:flex-row items-center justify-between shadow-sm hover:shadow-md transition-shadow gap-6">
                         {/* Carrier and Plan Name */}
                         <div className="flex items-center space-x-4 w-full xl:w-1/4">
-                          <div className="flex items-center space-x-2 shrink-0">
-                            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-slate-700 shadow-sm bg-white flex items-center justify-center">
-                              <Image src={getLogoSrc(rec.carrier_name)} alt={rec.carrier_name || 'Carrier Logo'} fill sizes="32px" className="object-contain p-[5px]" />
-                            </div>
-                            <span className="text-base font-bold text-gray-700 dark:text-gray-300">{rec.carrier_name}</span>
-                          </div>
+                          <CarrierBadge name={rec.carrier_name} baseNetwork={rec.base_network} size="md" showName={true} />
                           <h4 className="font-bold text-gray-900 dark:text-white text-base truncate">{rec.plan_name}</h4>
                         </div>
   

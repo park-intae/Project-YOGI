@@ -6,6 +6,7 @@ import * as path from 'path';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
+import { parseMvnoPlans } from './utils/mvno-parser.util';
 
 @Injectable()
 export class TelemetryService {
@@ -97,21 +98,8 @@ export class TelemetryService {
       }
 
       let rawPlans = root.alddlCharge || [];
-      // 결과가 단건일 경우 객체로 반환되므로 배열 정규화 처리
-      if (!Array.isArray(rawPlans)) {
-        rawPlans = [rawPlans];
-      }
-      
-      // DB가 요구하는 JSON (plans) 포맷으로 매핑
-      const mappedPlans = rawPlans.map((item: any) => ({
-        carrier: item.telecomName,
-        plan_name: item.chargeName,
-        network_type: item.telecomGenerationType,
-        base_fee: String(item.chargeAmount || 0),
-        data_allowance_gb: String(item.dataAmount || 0), // (MB 단위이나 기존 DB 컬럼 명칭 유지)
-        voice_allowance_min: String(item.voiceAmount || 0),
-        raw_description: JSON.stringify(item),
-      }));
+      // DB가 요구하는 JSON (plans) 포맷으로 매핑 (알뜰폰 특화 파싱 로직 분리)
+      const mappedPlans = parseMvnoPlans(rawPlans);
 
       return {
         status: 'SUCCESS',
@@ -179,11 +167,13 @@ export class TelemetryService {
           },
           update: {
             networkType: plan.network_type || '',
+            baseNetwork: plan.base_network || 'UNKNOWN',
             rawPlanDescription: JSON.stringify(plan),
           },
           create: {
             carrier,
             planName,
+            baseNetwork: plan.base_network || 'UNKNOWN',
             networkType: plan.network_type || '',
             baseFee: 0, // transform 단계에서 파싱하여 업데이트할 것이므로 기본값 설정
             dataAllowanceGb: 0,
@@ -230,6 +220,7 @@ export class TelemetryService {
             carrier: rawObj.carrier || plan.carrier,
             planName: rawObj.plan_name || plan.planName,
             networkType: rawObj.network_type || plan.networkType,
+            baseNetwork: rawObj.base_network || plan.baseNetwork,
             baseFee,
             dataAllowanceGb,
             voiceAllowanceMin,

@@ -7,6 +7,11 @@ export class CurrentPlanDto {
   @IsString()
   actual_carrier: string;
 
+  @ApiProperty({ required: false, example: 'KT망', description: '현재 이용 중인 통신망 (알뜰폰의 경우)' })
+  @IsOptional()
+  @IsString()
+  actual_base_network?: string;
+
   @ApiProperty({ example: 'LTE 데이터ON', description: '현재 요금제명' })
   @IsString()
   actual_plan_name: string;
@@ -25,10 +30,15 @@ export class CurrentPlanDto {
 }
 
 export class DemandConditionDto {
-  @ApiProperty({ required: false, example: '알뜰폰', description: '선호 통신사' })
+  @ApiProperty({ required: false, example: '우체국', description: '선호 통신사' })
   @IsOptional()
   @IsString()
   preferred_carrier_type?: string;
+
+  @ApiProperty({ required: false, example: 'KT망', description: '선호 통신망 (알뜰폰의 경우)' })
+  @IsOptional()
+  @IsString()
+  preferred_base_network?: string;
 
   @ApiProperty({ required: false, example: 'LTE', description: '선호 네트워크 타입' })
   @IsOptional()

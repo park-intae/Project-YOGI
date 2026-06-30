@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getCarrierFilter } from '../common/utils/carrier.util';
 
 @Injectable()
 export class RecommendationsService {
@@ -41,6 +42,7 @@ export class RecommendationsService {
           data: {
             inputId: inputSession.id,
             carrier: dto.current_plan.actual_carrier,
+            baseNetwork: dto.current_plan.actual_base_network || 'UNKNOWN',
             planName: dto.current_plan.actual_plan_name,
             networkType: 'UNKNOWN', // Legacy field fallback
             baseFee: dto.current_plan.actual_monthly_fee,
@@ -55,6 +57,7 @@ export class RecommendationsService {
           data: {
             inputId: inputSession.id,
             preferredCarrier: dto.demand_condition.preferred_carrier_type,
+            preferredBaseNetwork: dto.demand_condition.preferred_base_network,
             preferredNetworkType: dto.demand_condition.preferred_network_type,
             maxFee: dto.demand_condition.max_budget,
           },
@@ -76,6 +79,7 @@ export class RecommendationsService {
     
     if (demand?.maxFee) where.baseFee = { ...where.baseFee, lte: demand.maxFee };
     if (demand?.preferredCarrier) where.carrier = demand.preferredCarrier;
+    if (demand?.preferredBaseNetwork) where.baseNetwork = demand.preferredBaseNetwork;
     if (demand?.preferredNetworkType) where.networkType = demand.preferredNetworkType;
 
     return this.prisma.plan.findMany({
@@ -121,8 +125,9 @@ export class RecommendationsService {
         {
           rank: 1,
           plan_id: candidatePlans[0]?.id?.toString() || 'mock-id-1',
-          carrier_name: 'SKT',
-          plan_name: '5GX 레귤러 플러스',
+          carrier_name: '우체국알뜰(모빙)',
+          base_network: 'SKT망',
+          plan_name: '5G 다이렉트 45',
           price: 69000,
           data_allowance: 250,
           data_speed_limit: 5,
@@ -131,8 +136,9 @@ export class RecommendationsService {
         {
           rank: 2,
           plan_id: candidatePlans[1]?.id?.toString() || 'mock-id-2',
-          carrier_name: 'KT',
-          plan_name: '5G 슬림',
+          carrier_name: '프리티',
+          base_network: 'KT망',
+          plan_name: '초이스 베이직',
           price: 55000,
           data_allowance: 10,
           data_speed_limit: 1,
@@ -141,18 +147,19 @@ export class RecommendationsService {
         {
           rank: 3,
           plan_id: candidatePlans[2]?.id?.toString() || 'mock-id-3',
-          carrier_name: 'LGU+',
-          plan_name: '5G 라이트+',
+          carrier_name: '큰사람',
+          base_network: 'LGU+망',
+          plan_name: '5G 안심 15GB+',
           price: 47000,
           data_allowance: 12,
           data_speed_limit: 1,
           expected_savings: 42000,
         },
         {
-          rank: 4,
           plan_id: candidatePlans[3]?.id?.toString() || 'mock-id-4',
-          carrier_name: '알뜰폰(SKT망)',
-          plan_name: '5G 안심 15GB+',
+          carrier_name: '이야기모바일',
+          base_network: 'SKT망',
+          plan_name: '이야기 5G 라이트',
           price: 33000,
           data_allowance: 15,
           data_speed_limit: 3,
@@ -203,13 +210,14 @@ export class RecommendationsService {
                     rank: { type: SchemaType.INTEGER },
                     plan_id: { type: SchemaType.STRING },
                     carrier_name: { type: SchemaType.STRING },
+                    base_network: { type: SchemaType.STRING },
                     plan_name: { type: SchemaType.STRING },
                     price: { type: SchemaType.INTEGER },
                     data_allowance: { type: SchemaType.NUMBER },
                     data_speed_limit: { type: SchemaType.NUMBER },
                     expected_savings: { type: SchemaType.INTEGER }
                   },
-                  required: ['rank', 'plan_id', 'carrier_name', 'plan_name', 'price', 'data_allowance', 'data_speed_limit', 'expected_savings']
+                  required: ['rank', 'plan_id', 'carrier_name', 'base_network', 'plan_name', 'price', 'data_allowance', 'data_speed_limit', 'expected_savings']
                 }
               }
             },

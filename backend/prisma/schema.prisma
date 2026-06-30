@@ -13,6 +13,7 @@ datasource db {
 model Plan {
   id                 Int      @id @default(autoincrement())
   carrier            String
+  baseNetwork        String   @map("base_network")
   planName           String   @map("plan_name")
   networkType        String   @map("network_type")
   baseFee            Int      @map("base_fee")
@@ -23,33 +24,34 @@ model Plan {
   updatedAt          DateTime @updatedAt @db.Timestamptz
 
   @@unique([carrier, planName])
-  @@index([baseFee, dataAllowanceGb, carrier])
+  @@index([baseFee, dataAllowanceGb, carrier, baseNetwork])
   @@map("plans")
 }
 
 model InputSession {
-  id        String      @id @default(uuid()) @db.Uuid
-  sessionId String      @map("session_id") @db.Uuid
-  createdAt DateTime    @default(now()) @db.Timestamptz
-  updatedAt DateTime    @updatedAt @db.Timestamptz
-  
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
   userPlan   UserPlan?
   userDemand UserDemand?
-  
+
   @@map("input_sessions")
 }
 
 model UserPlan {
-  inputId            String       @id @map("input_id") @db.Uuid
-  session            InputSession @relation(fields: [inputId], references: [id], onDelete: Cascade)
-  carrier            String
-  planName           String       @map("plan_name")
-  networkType        String       @map("network_type")
-  baseFee            Int          @map("base_fee")
-  dataAllowanceGb    Float        @map("data_allowance_gb")
-  voiceAllowanceMin  Int          @map("voice_allowance_min")
-  createdAt          DateTime     @default(now()) @db.Timestamptz
-  updatedAt          DateTime     @updatedAt @db.Timestamptz
+  inputId           String       @id @map("input_id") @db.Uuid
+  session           InputSession @relation(fields: [inputId], references: [id], onDelete: Cascade)
+  carrier           String
+  baseNetwork       String       @default("UNKNOWN") @map("base_network")
+  planName          String       @map("plan_name")
+  networkType       String       @map("network_type")
+  baseFee           Int          @map("base_fee")
+  dataAllowanceGb   Float        @map("data_allowance_gb")
+  voiceAllowanceMin Int          @map("voice_allowance_min")
+  createdAt         DateTime     @default(now()) @db.Timestamptz
+  updatedAt         DateTime     @updatedAt @db.Timestamptz
 
   @@map("user_plans")
 }
@@ -58,6 +60,7 @@ model UserDemand {
   inputId              String       @id @map("input_id") @db.Uuid
   session              InputSession @relation(fields: [inputId], references: [id], onDelete: Cascade)
   preferredCarrier     String?      @map("preferred_carrier")
+  preferredBaseNetwork String?      @map("preferred_base_network")
   preferredNetworkType String?      @map("preferred_network_type")
   maxFee               Int?         @map("max_fee")
   minDataGb            Float?       @map("min_data_gb")

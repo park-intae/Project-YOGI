@@ -40,7 +40,8 @@
     {
       "rank": 1,
       "plan_id": "1",
-      "carrier_name": "SKT",
+      "carrier_name": "우체국알뜰(모빙)",
+      "base_network": "SKT망",
       "plan_name": "5G 다이렉트 45",
       "price": 45000,
       "data_allowance": 50,

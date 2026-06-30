@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { getCarrierFilter } from '../common/utils/carrier.util';
 
 @Injectable()
 export class PlansService {
@@ -14,11 +15,7 @@ export class PlansService {
     const where: any = {};
 
     if (carrierType) {
-      if (carrierType === '알뜰폰') {
-        where.carrier = { notIn: ['SKT', 'KT', 'LGU_PLUS'] };
-      } else {
-        where.carrier = carrierType;
-      }
+      where.carrier = getCarrierFilter(carrierType);
     }
 
     if (networkType) {
