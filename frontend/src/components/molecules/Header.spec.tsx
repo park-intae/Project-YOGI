@@ -1,6 +1,10 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+
 import { describe, it, expect } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+expect.extend(matchers);
 import Header from './Header';
 
 describe('Header component', () => {
@@ -11,6 +15,6 @@ describe('Header component', () => {
 
   it('renders the help button', () => {
     render(<Header />);
-    expect(screen.getByRole('button', { name: /이용 방법/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /이용 방법/i })[0]).toBeInTheDocument();
   });
 });

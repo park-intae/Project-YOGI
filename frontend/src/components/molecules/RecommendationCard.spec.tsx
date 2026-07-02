@@ -1,6 +1,10 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+
 import { describe, it, expect } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+expect.extend(matchers);
 import RecommendationCard from './RecommendationCard';
 
 describe('RecommendationCard component', () => {
@@ -23,7 +27,7 @@ describe('RecommendationCard component', () => {
 
   it('renders saving amount if diff > 0', () => {
     render(<RecommendationCard idx={0} rec={mockRec} currentFee={100000} />);
-    expect(screen.getByText(/11,000/)).toBeInTheDocument();
-    expect(screen.getByText(/132,000/)).toBeInTheDocument();
+    expect(screen.getAllByText(/11,000/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/132,000/)[0]).toBeInTheDocument();
   });
 });

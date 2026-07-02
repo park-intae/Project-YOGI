@@ -1,4 +1,5 @@
 import { isMno, isMvno, getMvnoWhereClause, getCarrierFilter } from './carrier.util';
+import { describe, it, expect } from 'vitest';
 
 describe('Carrier Utils', () => {
   describe('isMno', () => {

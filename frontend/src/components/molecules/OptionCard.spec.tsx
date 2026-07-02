@@ -1,6 +1,12 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { cleanup } from '@testing-library/react';
+expect.extend(matchers);
+afterEach(cleanup);
 import OptionCard from './OptionCard';
 
 describe('OptionCard component', () => {

@@ -1,6 +1,18 @@
-import '@testing-library/jest-dom/vitest';
+import { vi, expect, afterEach } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { cleanup } from '@testing-library/react';
 
-// Mock Next.js navigation
+expect.extend(matchers);
+
+afterEach(() => {
+  cleanup();
+});
+
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};// Mock Next.js navigation
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),

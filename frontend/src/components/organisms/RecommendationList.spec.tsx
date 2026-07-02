@@ -1,6 +1,18 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { cleanup } from '@testing-library/react';
+expect.extend(matchers);
+afterEach(cleanup);
+
+globalThis.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 import RecommendationList from './RecommendationList';
 
 describe('RecommendationList component', () => {
@@ -25,7 +37,7 @@ describe('RecommendationList component', () => {
 
   it('shows more recommendations when button is clicked', () => {
     render(<RecommendationList recommendations={mockRecs} currentFee={100000} />);
-    const button = screen.getByRole('button', { name: /다른 요금제 더 보기/i });
+    const button = screen.getAllByRole('button', { name: /다른 요금제 더 보기/i })[0];
     fireEvent.click(button);
     
     expect(screen.getByText('Plan 4')).toBeInTheDocument();

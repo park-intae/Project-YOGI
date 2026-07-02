@@ -1,4 +1,5 @@
 import { parseMvnoPlans } from './mvno-parser.util';
+import { describe, it, expect } from 'vitest';
 
 describe('Mvno Parser Utils', () => {
   it('should parse an array of mvno plans', () => {

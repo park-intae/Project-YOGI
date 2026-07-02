@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { yogiApi } from '@/lib/api';
+import { yogiApi } from '../../lib/api';
 import { Loader2, Sparkles } from 'lucide-react';
 import OptionCard from './OptionCard';
 

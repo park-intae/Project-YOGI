@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { getLogoSrc } from '@/lib/carrier';
+import { getLogoSrc } from '../../lib/carrier';
 
 interface CarrierBadgeProps {
   name: string;

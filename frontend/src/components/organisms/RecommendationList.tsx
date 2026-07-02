@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import RecommendationCard from '@/components/molecules/RecommendationCard';
-import ConcentricDonutChart from '@/components/atoms/ConcentricDonutChart';
+import RecommendationCard from '../molecules/RecommendationCard';
+import ConcentricDonutChart from '../atoms/ConcentricDonutChart';
 import { ArrowDown, ArrowUp } from 'lucide-react';
-import AccordionReveal from '@/components/molecules/AccordionReveal';
-import CarrierBadge from '@/components/atoms/CarrierBadge';
-import { getLogoSrc } from '@/lib/carrier';
+import AccordionReveal from '../molecules/AccordionReveal';
+import CarrierBadge from '../atoms/CarrierBadge';
+import { getLogoSrc } from '../../lib/carrier';
 
 export default function RecommendationList({ recommendations, currentFee }: { recommendations: any[], currentFee: number }) {
   const [showAll, setShowAll] = useState(false);

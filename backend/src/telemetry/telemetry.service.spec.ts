@@ -3,7 +3,16 @@ import { TelemetryService } from './telemetry.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpService } from '@nestjs/axios';
+import * as fs from 'fs';
 
+vi.mock('fs', () => ({
+  default: {
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+  },
+  existsSync: vi.fn(),
+  readFileSync: vi.fn(),
+}));
 // PrismaService Mocking
 const mockPrismaService = {
   $transaction: vi.fn(async (cb) => {
@@ -228,6 +237,39 @@ describe('TelemetryService', () => {
 
       expect(ingestSpy).toHaveBeenCalledTimes(1);
       expect(transformSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fetchData', () => {
+    it('should throw Error if external API fails', async () => {
+      process.env.EXTERNAL_PLAN_API_URL = 'http://test.com';
+      mockHttpService.get.mockReturnValueOnce(of({ data: '<invalid></invalid>' }));
+      
+      await expect(service.fetchData('MOCK')).rejects.toThrow('API Response Error');
+      delete process.env.EXTERNAL_PLAN_API_URL;
+    });
+
+    it('should fallback to mock data if API_URL is not set and mock file exists', async () => {
+      delete process.env.EXTERNAL_PLAN_API_URL;
+      
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
+        mocks: [{ case_id: 'MOCK_CASE_01_SUCCESS', status: 'SUCCESS', response_data: { plans: [] } }]
+      }));
+      
+      const result = await service.fetchData('MOCK_CASE_01_SUCCESS');
+      expect(result.status).toBe('SUCCESS');
+    });
+
+    it('should parse allowances containing string characters', async () => {
+      const resultBase = (service as any).parseBaseFee('69,000원');
+      expect(resultBase).toBe(69000);
+
+      const resultData = (service as any).parseDataAllowance('매일5GB+소진시5Mbps');
+      expect(resultData).toBe(5);
+
+      const resultVoice = (service as any).parseVoiceAllowance('집/이동전화 무제한(영상/부가300분)');
+      expect(resultVoice).toBe(9999);
     });
   });
 });
