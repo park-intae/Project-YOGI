@@ -129,9 +129,9 @@ describe('RecommendationsService', () => {
       process.env.NODE_ENV = originalEnv;
     });
 
-    it('should return fallback if Gemini API fails', async () => {
+    it('should throw ServiceUnavailableException if Gemini API fails', async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      process.env.NODE_ENV = 'production';
       
       (service as any).genAI = {
         getGenerativeModel: vi.fn().mockReturnValue({
@@ -142,8 +142,7 @@ describe('RecommendationsService', () => {
       prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'session-123' }) } as any;
       prisma.plan = { findMany: vi.fn().mockResolvedValue([]) } as any;
 
-      const result = await service.getRecommendationsPrompt('input-123', 'session-123');
-      expect(result.ai_summary_comment).toContain('API 키가 없어 임시 모의 데이터를 반환합니다.');
+      await expect(service.getRecommendationsPrompt('input-123', 'session-123')).rejects.toThrowError('AI 분석 시간이 초과되었거나 실패했습니다');
 
       process.env.NODE_ENV = originalEnv;
     });

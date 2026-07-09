@@ -59,3 +59,16 @@
   - 백엔드: `fs` 모듈 Mocking 이슈를 파일 최상단 `vi.mock('fs')`로 해결하고, `RecommendationsService`와 `TelemetryService`에 외부 API 호출 에러, 예외 처리, Fallback 응답 로직에 대한 테스트 케이스 추가.
   - 프론트엔드: `DiagnosticForm.spec.tsx`에서 API 에러 발생 시의 동작 및 숨겨진(unlimited) 체크박스 해제 동작을 테스트.
   - 결과적으로 프로젝트 전체 테스트 커버리지를 74.75%까지 향상시키고 모든 에러를 해결함.
+
+## 10. Next.js (Turbopack) Error Overlay 강제 노출 현상
+- **문제 발생**: 프론트엔드에서 503 에러를 catch하여 UI에 정상적인 에러 배너를 띄웠음에도, 개발(Dev) 모드에서 Next.js의 전체 화면 에러 오버레이가 강제로 나타남.
+- **원인**: Next.js (App Router/Turbopack) 환경에서는 컴포넌트 내에 `console.error(err)`가 존재하면, 예외 처리를 했더라도 개발자 편의를 위해 Error Overlay가 이를 가로채서 강제 렌더링함.
+- **해결 방안**: catch 블록 내부의 `console.error(err)` 라인을 제거하여, 예외가 콘솔 에러 스트림을 타지 않고 UI 렌더링(에러 배너 노출)만 정상적으로 수행하도록 조치함.
+
+## 11. CSS Grid 요소 호버 시 overflow-hidden 에 의한 테두리 짤림 현상
+- **문제 발생**: Grid 레이아웃에 배치된 추천 요금제 카드를 호버할 때 카드 크기가 확대(`scale-[1.02]`)되고 그림자가 퍼지는데, Grid의 양 끝단에 위치한 1번과 3번 카드의 가장자리가 칼로 자른 듯 짤림.
+- **원인**: 카드들의 부모 요소(`AccordionReveal`)가 애니메이션을 위해 `overflow-hidden`을 갖고 있었음. 전체 화면 여백을 주기 위해 `AccordionReveal` '바깥'에 좌우 패딩(`px-4`)을 준 상태라, 카드가 팽창할 때 `AccordionReveal`의 경계선(Grid의 경계선)을 뚫고 나가면서 `overflow-hidden`에 의해 강제 클리핑됨.
+- **해결 방안**: 
+  - `AccordionReveal` 바깥에 있던 레이아웃 패딩(`px-4`)을 `AccordionReveal` 안쪽 컨테이너로 이동.
+  - 이로써 화면에 보이는 전체 핏(폭, 여백 등)은 동일하게 유지하면서, `AccordionReveal` 내부에 카드가 마음껏 팽창할 수 있는 '안전 구역(Safe Zone)'이 형성되어 짤림 현상이 완벽히 근절됨.
+  - 카드의 상하 팽창 시 잘림을 막기 위해 상하 패딩(`pt-6`, `pb-12`)도 넉넉히 부여하고 형제 요소 간 가림 현상은 `z-10`으로 방어함.

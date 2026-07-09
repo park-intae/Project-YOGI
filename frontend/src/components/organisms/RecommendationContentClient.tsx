@@ -20,8 +20,24 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
         const response = await yogiApi.getRecommendations(inputId);
         setData(response);
       } catch (err: any) {
-        console.error('Failed to fetch recommendations:', err);
-        setError('추천 결과를 불러오는 데 실패했습니다.');
+        const is503 = err.response?.status === 503;
+        const errorMessage = err.response?.data?.message || '추천 결과를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.';
+        setError(errorMessage);
+        
+        if (is503) {
+          // Fallback to mockup data so the user can still see something
+          setData({
+            input_id: inputId as string,
+            recommended_at: new Date().toISOString(),
+            ai_summary_comment: 'Gemini AI 호출량 초과로 인해 제공되는 임시(Mock) 추천 결과입니다.',
+            recommended_plans: [
+              { rank: 1, plan_id: 'm1', carrier_name: '우체국 알뜰폰', base_network: 'SKT', plan_name: '스마일 100분 15GB+', price: 15900, data_allowance: 15, data_speed_limit: 3, expected_savings: 73100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' },
+              { rank: 2, plan_id: 'm2', carrier_name: '이야기모바일', base_network: 'U+', plan_name: '이야기 안심 15GB+', price: 18900, data_allowance: 15, data_speed_limit: 3, expected_savings: 70100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' },
+              { rank: 3, plan_id: 'm3', carrier_name: 'KCT', base_network: 'KT', plan_name: '티플 15GB+', price: 19900, data_allowance: 15, data_speed_limit: 3, expected_savings: 69100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' },
+              { rank: 4, plan_id: 'm4', carrier_name: '프리티', base_network: 'SKT', plan_name: '프리티 데이터 11GB+', price: 23900, data_allowance: 11, data_speed_limit: 3, expected_savings: 65100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' }
+            ]
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -57,7 +73,7 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
     );
   }
 
-  if (error || !data) {
+  if (!data) {
     return (
       <div className="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-8 mt-12 text-center border border-red-100">
         <p className="text-red-500 mb-6 font-medium">{error || '데이터가 없습니다.'}</p>
@@ -71,9 +87,9 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
   const currentFee = 89000; // Mock current fee based on design
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+    <div className="w-full max-w-6xl mx-auto py-8">
       <AccordionReveal isOpen={true}>
-        <div id="step-recommendation" className="pt-2">
+        <div id="step-recommendation" className="pt-6 px-4 pb-12">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">AI</div>
@@ -113,6 +129,13 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
             )}
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 flex items-start shadow-sm">
+            <div className="text-red-500 mr-3 mt-0.5">⚠️</div>
+            <p className="text-sm text-red-800 font-medium">{error}</p>
+          </div>
+        )}
 
         {aiSummary && (
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">

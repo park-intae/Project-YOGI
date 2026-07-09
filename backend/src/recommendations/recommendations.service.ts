@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { ConfigService } from '@nestjs/config';
@@ -114,7 +114,7 @@ export class RecommendationsService {
       throw new ForbiddenException('Forbidden. Session ID mismatch.');
     }
 
-    const candidatePlans = await this.getCandidatePlans(session.userDemand, 10);
+    const candidatePlans = await this.getCandidatePlans(session.userDemand, 5);
     
     // Fallback to mock data if no apiKey or AI fails
     const mockFallback = {
@@ -227,7 +227,16 @@ export class RecommendationsService {
       });
 
       this.logger.log(`Calling Gemini API for inputId: ${inputId}`);
-      const result = await model.generateContent(promptTemplate);
+      
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Gemini API timeout')), 15000)
+      );
+
+      const result = await Promise.race([
+        model.generateContent(promptTemplate),
+        timeoutPromise
+      ]) as any;
+
       const responseText = result.response.text();
       
       const parsed = JSON.parse(responseText);
@@ -241,7 +250,7 @@ export class RecommendationsService {
 
     } catch (error) {
       this.logger.error(`AI Recommendation failed: ${error.message}`);
-      return mockFallback; // Fallback
+      throw new ServiceUnavailableException('AI 분석 시간이 초과되었거나 실패했습니다. 잠시 후 다시 시도해주세요.');
     }
   }
 }

@@ -74,19 +74,19 @@ const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentF
   if (idx === 0) {
     borderClass = 'border-2 border-yellow-400 shadow-md shadow-yellow-100 bg-white dark:bg-slate-900';
     badgeClass = 'bg-yellow-400 text-yellow-900 shadow-sm';
-    medalLabel = <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded shadow-sm">👑 1위 강력추천</span>;
+    medalLabel = <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded shadow-sm whitespace-nowrap shrink-0">👑 1위 강력추천</span>;
   } else if (idx === 1) {
-    borderClass = 'border-2 border-gray-300 shadow-md shadow-gray-100 bg-white dark:bg-slate-900';
+    borderClass = 'border-2 border-gray-300 shadow-md shadow-gray-300/50 dark:shadow-none bg-white dark:bg-slate-900';
     badgeClass = 'bg-gray-300 text-gray-800 dark:text-gray-200 shadow-sm';
-    medalLabel = <span className="bg-gray-200 text-gray-700 dark:text-gray-300 text-xs font-bold px-3 py-1 rounded">🥈 2위</span>;
+    medalLabel = <span className="bg-gray-200 text-gray-700 dark:text-gray-300 text-xs font-bold px-3 py-1 rounded whitespace-nowrap shrink-0">🥈 2위</span>;
   } else if (idx === 2) {
     borderClass = 'border-2 border-amber-500 shadow-md shadow-amber-100 bg-white dark:bg-slate-900';
     badgeClass = 'bg-amber-500 text-white shadow-sm';
-    medalLabel = <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded">🥉 3위</span>;
+    medalLabel = <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded whitespace-nowrap shrink-0">🥉 3위</span>;
   }
 
   return (
-    <div className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col h-full hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] ${borderClass}`}>
+    <div className={`relative z-0 rounded-2xl p-6 transition-all duration-300 flex flex-col h-full hover:scale-[1.02] hover:z-10 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] ${borderClass}`}>
       {/* Card Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-3">
@@ -127,7 +127,7 @@ const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentF
 
       {/* Action Button */}
         <a 
-          href={rec.plan_url || '#'}
+          href={(rec.plan_url && rec.plan_url !== '#') ? rec.plan_url : `https://www.epost.go.kr/comm.alddl.getMVNOChargeList.comm`}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full mt-8 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-4 rounded-xl font-bold transition-all duration-200 active:scale-[0.97]"
