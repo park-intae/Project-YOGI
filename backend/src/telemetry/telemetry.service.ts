@@ -7,6 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
 import { parseMvnoPlans } from './utils/mvno-parser.util';
+import { CrawlerService } from './crawler.service';
 
 @Injectable()
 export class TelemetryService {
@@ -15,6 +16,7 @@ export class TelemetryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly httpService: HttpService,
+    private readonly crawlerService: CrawlerService,
   ) {}
 
   /**
@@ -29,6 +31,10 @@ export class TelemetryService {
       
       // 2. Transform
       await this.transform();
+      
+      // 3. Crawler (URL 사전 스크래핑)
+      this.logger.log('[Cron Pipeline] Running crawler to fetch deep links...');
+      await this.crawlerService.updatePlanUrls();
       
       this.logger.log('[Cron Pipeline] Daily Telemetry pipeline completed successfully.');
     } catch (error) {

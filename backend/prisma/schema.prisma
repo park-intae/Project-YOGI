@@ -20,6 +20,7 @@ model Plan {
   dataAllowanceGb    Float    @map("data_allowance_gb")
   voiceAllowanceMin  Int      @map("voice_allowance_min")
   rawPlanDescription String   @map("raw_plan_description") @db.Text
+  planUrl            String?  @map("plan_url") @db.Text
   createdAt          DateTime @default(now()) @db.Timestamptz
   updatedAt          DateTime @updatedAt @db.Timestamptz
 
