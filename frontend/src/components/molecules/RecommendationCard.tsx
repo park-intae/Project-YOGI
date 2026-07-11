@@ -76,7 +76,7 @@ const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentF
     badgeClass = 'bg-yellow-400 text-yellow-900 shadow-sm';
     medalLabel = <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded shadow-sm whitespace-nowrap shrink-0">👑 1위 강력추천</span>;
   } else if (idx === 1) {
-    borderClass = 'border-2 border-gray-300 shadow-md shadow-gray-300/50 dark:shadow-none bg-white dark:bg-slate-900';
+    borderClass = 'border-2 border-gray-300 shadow-md shadow-gray-300 dark:shadow-gray-600 bg-white dark:bg-slate-900';
     badgeClass = 'bg-gray-300 text-gray-800 dark:text-gray-200 shadow-sm';
     medalLabel = <span className="bg-gray-200 text-gray-700 dark:text-gray-300 text-xs font-bold px-3 py-1 rounded whitespace-nowrap shrink-0">🥈 2위</span>;
   } else if (idx === 2) {

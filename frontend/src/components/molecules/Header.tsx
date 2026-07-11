@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { HelpCircle, Moon, Sun } from 'lucide-react';
+import { HelpCircle, Moon, Sun, Code2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 function ThemeToggle() {
@@ -28,6 +28,41 @@ function ThemeToggle() {
   );
 }
 
+function DevModeToggle() {
+  const [devMode, setDevMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setDevMode(localStorage.getItem('dev_mode') === 'true');
+  }, []);
+
+  const toggleDevMode = () => {
+    const newValue = !devMode;
+    setDevMode(newValue);
+    localStorage.setItem('dev_mode', newValue.toString());
+  };
+
+  if (!mounted) {
+    return <div className="w-[80px] h-[38px]" />;
+  }
+
+  return (
+    <button
+      onClick={toggleDevMode}
+      className={`flex items-center text-xs font-medium border rounded-full px-3 py-1.5 transition-colors ${
+        devMode 
+          ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-300' 
+          : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700'
+      }`}
+      title="개발 모드 (API 통신 안함)"
+    >
+      <Code2 size={16} className="mr-1" />
+      {devMode ? 'DEV ON' : 'DEV OFF'}
+    </button>
+  );
+}
+
 export default function Header() {
   const [showHelp, setShowHelp] = useState(false);
 
@@ -40,6 +75,7 @@ export default function Header() {
         </Link>
       </div>
       <div className="flex items-center space-x-3">
+        <DevModeToggle />
         <ThemeToggle />
         <div className="relative">
           <button 

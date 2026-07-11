@@ -99,7 +99,7 @@ export class RecommendationsService {
     });
   }
 
-  async getRecommendationsPrompt(inputId: string, sessionId: string) {
+  async getRecommendationsPrompt(inputId: string, sessionId: string, isDevMode = false) {
     const session = await this.prisma.inputSession.findUnique({
       where: { id: inputId },
       include: {
@@ -122,7 +122,7 @@ export class RecommendationsService {
     const mockFallback = {
       input_id: inputId,
       recommended_at: new Date().toISOString(),
-      ai_summary_comment: 'API 키가 없어 임시 모의 데이터를 반환합니다.',
+      ai_summary_comment: 'API 키가 없거나 개발(Mock) 모드이므로 임시 데이터를 반환합니다.',
       recommended_plans: [
         {
           rank: 1,
@@ -170,8 +170,8 @@ export class RecommendationsService {
       ]
     };
 
-    if (!this.genAI || process.env.NODE_ENV === 'test') {
-      this.logger.warn('Gemini API key not found or running in test mode. Returning mock data.');
+    if (isDevMode || !this.genAI || process.env.NODE_ENV === 'test') {
+      this.logger.warn('Running in Dev/Mock mode or Gemini API key not found. Returning mock data.');
       return mockFallback;
     }
 

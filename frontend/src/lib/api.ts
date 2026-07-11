@@ -90,7 +90,13 @@ export const yogiApi = {
   },
   
   getRecommendations: async (inputId: string): Promise<RecommendationResponseDto> => {
-    const response = await apiClient.get<RecommendationResponseDto>(`/v1/recommendations/${inputId}`);
+    let devMode = false;
+    if (typeof window !== 'undefined') {
+      devMode = localStorage.getItem('dev_mode') === 'true';
+    }
+    const response = await apiClient.get<RecommendationResponseDto>(`/v1/recommendations/${inputId}`, {
+      params: { dev_mode: devMode }
+    });
     return response.data;
   },
 
