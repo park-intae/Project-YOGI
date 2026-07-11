@@ -16,9 +16,11 @@ export class RecommendationsService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
   ) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY') || process.env.GEMINI_API_KEY;
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
+    } else {
+      this.logger.warn('GEMINI_API_KEY is missing! Initialized with mock mode.');
     }
   }
 
@@ -229,7 +231,7 @@ export class RecommendationsService {
       this.logger.log(`Calling Gemini API for inputId: ${inputId}`);
       
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Gemini API timeout')), 15000)
+        setTimeout(() => reject(new Error('Gemini API timeout')), 20000)
       );
 
       const result = await Promise.race([

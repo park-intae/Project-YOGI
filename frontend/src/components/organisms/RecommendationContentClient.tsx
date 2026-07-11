@@ -40,6 +40,9 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
         }
       } finally {
         setLoading(false);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('ai_analysis_complete'));
+        }
       }
     }
     fetchData();

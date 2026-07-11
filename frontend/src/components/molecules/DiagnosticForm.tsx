@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { yogiApi } from '../../lib/api';
 import { Loader2, Sparkles } from 'lucide-react';
 import OptionCard from './OptionCard';
+import { useEffect } from 'react';
 
 export default function DiagnosticForm() {
   const router = useRouter();
@@ -17,6 +18,12 @@ export default function DiagnosticForm() {
   const [isSmsUnlimited, setIsSmsUnlimited] = useState(true);
 
   const defaultCarrier = searchParams.get('carrier_type') || 'SKT';
+
+  useEffect(() => {
+    const handleComplete = () => setIsLoading(false);
+    window.addEventListener('ai_analysis_complete', handleComplete);
+    return () => window.removeEventListener('ai_analysis_complete', handleComplete);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
