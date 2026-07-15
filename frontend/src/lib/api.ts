@@ -100,6 +100,18 @@ export const yogiApi = {
     return response.data;
   },
 
+  getMoreRecommendations: async (inputId: string, excludedIds: string[]): Promise<RecommendationResponseDto> => {
+    let devMode = false;
+    if (typeof window !== 'undefined') {
+      devMode = localStorage.getItem('dev_mode') === 'true';
+    }
+    const excludedIdsStr = excludedIds.join(',');
+    const response = await apiClient.get<RecommendationResponseDto>(`/v1/recommendations/${inputId}/more`, {
+      params: { excluded_ids: excludedIdsStr, dev_mode: devMode }
+    });
+    return response.data;
+  },
+
   getPlans: async (params?: PlanFilterParams): Promise<any[]> => {
     const response = await apiClient.get<any[]>('/v1/plans', { params });
     return response.data;

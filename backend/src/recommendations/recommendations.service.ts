@@ -268,4 +268,140 @@ export class RecommendationsService {
       throw new ServiceUnavailableException('AI 분석 시간이 초과되었거나 실패했습니다. 잠시 후 다시 시도해주세요.');
     }
   }
+
+  async getMoreRecommendationsPrompt(inputId: string, sessionId: string, excludedIds: string[], isDevMode = false) {
+    const session = await this.prisma.inputSession.findUnique({
+      where: { id: inputId },
+      include: {
+        userPlan: true,
+        userDemand: true,
+      }
+    });
+
+    if (!session) {
+      throw new NotFoundException('Session data not found for the given input_id');
+    }
+
+    if (session.sessionId !== sessionId) {
+      throw new ForbiddenException('Forbidden. Session ID mismatch.');
+    }
+
+    // Fetch more candidates (e.g., top 15)
+    let candidatePlans = await this.getCandidatePlans(session.userDemand, 15);
+    
+    // Filter out already recommended plans
+    if (excludedIds && excludedIds.length > 0) {
+      candidatePlans = candidatePlans.filter(p => !excludedIds.includes(p.id.toString()));
+    }
+    
+    // Take the next 5 candidates to analyze
+    const additionalCandidates = candidatePlans.slice(0, 5);
+
+    const mockFallback = {
+      input_id: inputId,
+      recommended_at: new Date().toISOString(),
+      ai_summary_comment: 'API 키가 없거나 개발(Mock) 모드이므로 임시 추가 데이터를 반환합니다.',
+      recommended_plans: additionalCandidates.map((cp, idx) => ({
+        rank: idx + 4,
+        plan_id: cp.id.toString(),
+        plan_url: cp.planUrl || null,
+        carrier_name: cp.carrier,
+        base_network: 'N/A',
+        plan_name: cp.planName,
+        price: cp.baseFee,
+        data_allowance: cp.dataAllowanceGb,
+        data_speed_limit: 0,
+        expected_savings: 0,
+      }))
+    };
+
+    if (isDevMode || !this.genAI || process.env.NODE_ENV === 'test') {
+      this.logger.warn('Running in Dev/Mock mode or Gemini API key not found. Returning mock data for MORE.');
+      return mockFallback;
+    }
+
+    if (additionalCandidates.length === 0) {
+      return {
+        input_id: inputId,
+        recommended_at: new Date().toISOString(),
+        ai_summary_comment: '더 이상 추천할 수 있는 요금제가 없습니다.',
+        recommended_plans: []
+      };
+    }
+
+    try {
+      const promptPath = path.join(process.cwd(), '../antigravity/prompts/recommendation_more_v1.md');
+      let promptTemplate = fs.readFileSync(promptPath, 'utf-8');
+
+      const up = session.userPlan || {} as any;
+      promptTemplate = promptTemplate
+        .replace('{{user_base_fee}}', up.baseFee?.toString() || '0')
+        .replace('{{candidate_plans_json}}', JSON.stringify(additionalCandidates, null, 2));
+
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: SchemaType.OBJECT,
+            properties: {
+              ai_summary_comment: { type: SchemaType.STRING },
+              recommended_plans: {
+                type: SchemaType.ARRAY,
+                items: {
+                  type: SchemaType.OBJECT,
+                  properties: {
+                    rank: { type: SchemaType.INTEGER },
+                    plan_id: { type: SchemaType.STRING },
+                    carrier_name: { type: SchemaType.STRING },
+                    base_network: { type: SchemaType.STRING },
+                    plan_name: { type: SchemaType.STRING },
+                    price: { type: SchemaType.INTEGER },
+                    data_allowance: { type: SchemaType.NUMBER },
+                    data_speed_limit: { type: SchemaType.NUMBER },
+                    expected_savings: { type: SchemaType.INTEGER }
+                  },
+                  required: ['rank', 'plan_id', 'carrier_name', 'base_network', 'plan_name', 'price', 'data_allowance', 'data_speed_limit', 'expected_savings']
+                }
+              }
+            },
+            required: ['ai_summary_comment', 'recommended_plans']
+          }
+        }
+      });
+
+      this.logger.log(`Calling Gemini API (MORE) for inputId: ${inputId}`);
+      
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Gemini API timeout')), 20000)
+      );
+
+      const result = await Promise.race([
+        model.generateContent(promptTemplate),
+        timeoutPromise
+      ]) as any;
+
+      const responseText = result.response.text();
+      const parsed = JSON.parse(responseText);
+      
+      const enrichedPlans = parsed.recommended_plans.map((p: any) => {
+        const matchingPlan = additionalCandidates.find(cp => cp.id.toString() === p.plan_id);
+        return {
+          ...p,
+          plan_url: matchingPlan?.planUrl || null
+        };
+      });
+
+      return {
+        input_id: inputId,
+        recommended_at: new Date().toISOString(),
+        ai_summary_comment: parsed.ai_summary_comment,
+        recommended_plans: enrichedPlans
+      };
+
+    } catch (error) {
+      this.logger.error(`AI Recommendation (MORE) failed: ${error.message}`);
+      throw new ServiceUnavailableException('AI 분석 시간이 초과되었거나 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
+  }
 }

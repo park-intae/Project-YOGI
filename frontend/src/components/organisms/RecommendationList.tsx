@@ -1,20 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import RecommendationCard from '../molecules/RecommendationCard';
 import ConcentricDonutChart from '../atoms/ConcentricDonutChart';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import AccordionReveal from '../molecules/AccordionReveal';
 import CarrierBadge from '../atoms/CarrierBadge';
-import { getLogoSrc } from '../../lib/carrier';
+import { yogiApi } from '../../lib/api';
+import { Loader2 } from 'lucide-react';
 
-export default function RecommendationList({ recommendations, currentFee }: { recommendations: any[], currentFee: number }) {
+export default function RecommendationList({ recommendations, currentFee, inputId }: { recommendations: any[], currentFee: number, inputId: string }) {
   const [showAll, setShowAll] = useState(false);
   const [carrierFilter, setCarrierFilter] = useState('전체');
+  const [allRecommendations, setAllRecommendations] = useState<any[]>(recommendations);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  useEffect(() => {
+    setAllRecommendations(recommendations);
+  }, [recommendations]);
   
-  const topRecommendations = recommendations.slice(0, 3);
-  const otherRecommendations = recommendations.slice(3);
+  const topRecommendations = allRecommendations.slice(0, 3);
+  const otherRecommendations = allRecommendations.slice(3);
+
+  const handleLoadMore = async () => {
+    if (loadingMore) return;
+    
+    if (allRecommendations.length > 3) {
+      setShowAll(true);
+      return;
+    }
+
+    setLoadingMore(true);
+    try {
+      const excludedIds = allRecommendations.map(r => r.plan_id);
+      const moreData = await yogiApi.getMoreRecommendations(inputId, excludedIds);
+      if (moreData.recommended_plans && moreData.recommended_plans.length > 0) {
+        setAllRecommendations([...allRecommendations, ...moreData.recommended_plans]);
+      } else {
+        alert('추가로 추천해 드릴 수 있는 요금제가 없습니다.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('추가 요금제를 불러오지 못했습니다.');
+    } finally {
+      setLoadingMore(false);
+      setShowAll(true);
+    }
+  };
 
   const filteredOtherRecommendations = otherRecommendations.filter((rec: any) => {
     if (carrierFilter === '전체') return true;
@@ -44,19 +77,27 @@ export default function RecommendationList({ recommendations, currentFee }: { re
         ))}
       </div>
       
-      {otherRecommendations.length > 0 && (
-        <div className="mt-8">
-          <div className={`text-center transition-opacity duration-300 ${showAll ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
-            <button 
-              onClick={() => setShowAll(true)}
-              className="px-8 py-3 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-all shadow-sm"
-            >
-              다른 요금제 더 보기
-            </button>
-          </div>
+      {!showAll && (
+        <div className="mt-8 text-center">
+          <button 
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-8 py-3 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-all shadow-sm flex items-center justify-center mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                AI가 추가 요금제를 분석 중입니다...
+              </>
+            ) : (
+              '다른 요금제 더 보기'
+            )}
+          </button>
+        </div>
+      )}
           
-          <AccordionReveal isOpen={showAll}>
-            <div id="step-compare" className="space-y-4 pt-4 scroll-mt-24">
+      <AccordionReveal isOpen={showAll}>
+        <div id="step-compare" className="space-y-4 pt-4 scroll-mt-24">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 px-2 space-y-3 md:space-y-0">
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">추가 요금제 비교</h3>
                 <div className="flex flex-wrap gap-2 justify-end w-full md:w-auto">
@@ -158,8 +199,7 @@ export default function RecommendationList({ recommendations, currentFee }: { re
               </div>
             </div>
           </AccordionReveal>
-        </div>
-      )}
+
     </>
   );
 }

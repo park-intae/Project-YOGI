@@ -122,6 +122,13 @@
 - [x] 크롤러 요금제 이름 추출 로직 강화 (.closest와 title 태그 검색 방식 적용)
 - [x] UI 헤더 영역 마우스 오버 시(z-index) 겹침 문제 해결 확인
 
+### [Phase 16] "다른 요금제 더 보기" 비동기 AI 추가 추천 (Load More) 기능 구현
+- [x] 백엔드 `RecommendationsController` 및 `RecommendationsService`에 추가 추천 페이징 API(`GET /api/v1/recommendations/:input_id/more`) 설계
+- [x] 기존 추천된 요금제를 제외한 차순위 후보군(예: 4위~8위)을 추출하는 로직 및 AI 프롬프트(`recommendation_more_v1.md`) 분리 작성
+- [x] 프론트엔드 `yogiApi`에 추가 추천 API 호출 함수 연동
+- [x] 프론트엔드 `RecommendationList.tsx` 컴포넌트의 버튼 클릭 시 비동기 로딩(Spinner) 상태 관리 추가
+- [x] 프론트엔드 배열 병합(Append) 로직 및 자연스러운 애니메이션 렌더링 유지
+
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
 - **일시**: 2026-07-15T17:15:00+09:00
 - **완료된 작업**:

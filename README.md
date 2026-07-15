@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📱 Project YOGI
+# 📱 Project YOGI (v1.1)
 **알뜰폰 요금제 AI 맞춤 추천 플랫폼**
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat&logo=next.js)
@@ -22,6 +22,13 @@
 - **AI 정밀 큐레이션**: LLM(Gemini)을 활용해 사용자의 현재 데이터/통화량과 무제한 여부 등의 선호도를 분석하고, 가장 경제적인 **TOP 3 알뜰폰 요금제**를 맞춤 추천합니다.
 - **Data-centric 파이프라인**: 우체국 알뜰폰 크롤링 및 API 데이터를 가공하여 DB에 적재하며, AI 프롬프트를 데이터로 격리(Markdown)하여 런타임 안정성을 높입니다.
 - **강력한 회복 탄력성 (Resilience)**: 외부 API 장애 및 LLM 응답 지연(20초 타임아웃) 시 스켈레톤 UI와 목업(Mock) 데이터로 안전하게 Fallback 렌더링을 보장합니다.
+
+---
+
+## 🌟 v1.1 업데이트 내역 (Load More AI Recommendations)
+- **비동기 추가 추천 (Load More)**: 최초 추천 시 빠른 UX를 위해 상위 3개 요금제만 즉시 제공하고, "다른 요금제 더 보기" 버튼 클릭 시 비동기로 Gemini AI를 새로 호출하여 차순위 추천 요금제를 자연스럽게 Append 하는 기능을 구현했습니다.
+- **프롬프트 파이프라인 분리**: 초기 분석과 추가 분석의 뉘앙스를 분리하기 위해 전용 프롬프트(`recommendation_more_v1.md`)를 신설하여 AI 큐레이션 품질을 한 차원 높였습니다.
+- **비동기 UX 폴리싱**: 추천 대기 시간 동안 버튼 내 로딩 스피너를 노출하고, 배열 데이터 병합 후 부드러운 아코디언 애니메이션으로 전환되도록 프론트엔드 상태 관리를 고도화했습니다.
 
 ---
 

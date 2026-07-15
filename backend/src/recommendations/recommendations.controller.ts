@@ -41,4 +41,20 @@ export class RecommendationsController {
     const isDevMode = devMode === 'true';
     return this.recommendationsService.getRecommendationsPrompt(inputId, sessionId, isDevMode);
   }
+
+  @Get('recommendations/:input_id/more')
+  @UseGuards(SessionGuard)
+  @ApiOperation({ summary: 'Get additional AI recommendations' })
+  @ApiHeader({ name: 'X-Session-ID', description: 'Unique identifier for the user session', required: true })
+  @ApiResponse({ status: 200, description: 'Additional recommendations generated.' })
+  async getMoreRecommendations(
+    @Param('input_id', new ParseUUIDPipe({ version: '4' })) inputId: string,
+    @SessionId() sessionId: string,
+    @Query('excluded_ids') excludedIdsStr?: string,
+    @Query('dev_mode') devMode?: string,
+  ) {
+    const isDevMode = devMode === 'true';
+    const excludedIds = excludedIdsStr ? excludedIdsStr.split(',') : [];
+    return this.recommendationsService.getMoreRecommendationsPrompt(inputId, sessionId, excludedIds, isDevMode);
+  }
 }

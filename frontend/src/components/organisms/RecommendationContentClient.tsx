@@ -147,7 +147,7 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
         )}
 
         {recommendations.length > 0 ? (
-          <RecommendationList recommendations={recommendations} currentFee={currentFee} />
+          <RecommendationList recommendations={recommendations} currentFee={currentFee} inputId={data.input_id} />
         ) : (
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-12 text-center">
             <p className="text-gray-500 dark:text-gray-400 dark:text-slate-500">추천 결과가 없습니다.</p>
