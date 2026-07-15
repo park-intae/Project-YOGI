@@ -15,7 +15,7 @@
 
 ### [Phase 1] 환경 구축 및 데이터 아키텍처
 - [x] 프론트엔드 폴더(`frontend`) 생성 및 Next.js 기본 템플릿 설치
-- [x] 백엔드 폴더(`backend`) 생성 및 NestJS 기본 템일릿 설치
+- [x] 백엔드 폴더(`backend`) 생성 및 NestJS 기본 템플릿 설치
 - [x] 백엔드 Core 의존성 라이브러리(Swagger, Prisma Client, Config 등) 설치
 - [x] 백엔드 Dev 의존성 라이브러리(Prisma CLI, Vitest, SWC 등) 설치 및 설정
 - [x] PostgreSQL 데이터베이스 연동 및 Prisma 스키마(TIMESTAMPTZ, UUID `input_id` 기반 다형성 관계) 작성
@@ -95,12 +95,12 @@
 - [x] 추천 알고리즘 수정: AI 프롬프트 및 백엔드 조회 로직을 알뜰폰 요금제 내에서만 이뤄지도록 고정 (is_mvno 속성 제거)
 - [x] 프론트엔드 필터 개편: 기존 "SKT/KT/LGU+/알뜰폰" 필터를 제거하고 "SKT망/KT망/LGU+망" 및 주요 알뜰폰 통신사 필터로 교체
 - [x] 프론트엔드 UX 라이팅 수정: 사용자가 통신 3사에서 알뜰폰으로 넘어올 때의 '절약 금액'을 강조하도록 입력 폼 변경
-- [x] 테스트: Jest, E2E 및 AI 모델 모의 추천 테스트 수행하여 알뜰폰 전용 환경 안정성 확보불필요한 컴포넌트 제거
+- [x] 테스트: Vitest, E2E 및 AI 모델 모의 추천 테스트 수행하여 알뜰폰 전용 환경 안정성 확보 및 불필요한 컴포넌트 제거
 - [x] 테스트 코드 갱신: 알뜰폰 전용 비즈니스 로직에 맞춰 Vitest 단위 테스트 재작성 및 통과 확인
 
 ### [Phase 13] 예외 처리 및 UI 연동 고도화 (AI 추천 속도 개선)
 - [x] AI 모델(`RecommendationsService`) 추천 후보군 축소 (10개 -> 5개)를 통한 토큰 처리 속도 최적화
-- [x] 백엔드 AI 분석 로직에 15초 제한 타임아웃(`Promise.race`) 안전장치 적용
+- [x] 백엔드 AI 분석 로직에 20초 제한 타임아웃(`Promise.race`) 안전장치 적용
 - [x] 503 Service Unavailable 에러를 프론트엔드로 반환하도록 예외 스펙 수정 및 Vitest 테스트 갱신
 - [x] 프론트엔드(`RecommendationContentClient`)에서 백엔드 503 에러 발생 시 Next.js 오버레이를 방지하고, 에러 배너와 함께 임시 '목업(Mock)' 요금제 데이터를 렌더링하도록 롤백 및 고도화
 - [x] UI 디테일 개선: 2위 카드 은색 그림자 시인성 강화 (`shadow-gray-300/50`), 순위 뱃지 줄바꿈 방지 (`whitespace-nowrap shrink-0`)

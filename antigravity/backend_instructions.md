@@ -9,7 +9,7 @@
 - Prisma ORM
 
 ### 인프라 & 테스트
-- Antigravity CLI, Github Actions, Redis
+- Antigravity CLI, Github Actions
 - Vitest (코드 및 로직 검증)
 - Supertest (API 시나리오 검증)
 
@@ -38,9 +38,9 @@
 - **구조화된 출력(Structured Output) 강제**:
   - LLM API(오픈AI 등)를 호출하여 요금제를 추천받을 때, AI가 임의의 텍스트를 뱉지 못하도록 `response_format: { type: "json_object" }` 또는 JSON Schema 형식을 강제하여 백엔드 DTO 및 DB(JSONB 등)에 파싱 에러 없이 즉시 매핑되도록 설계할 것.
 
-## 6. prisma ORM 및 트랜잭션 안전성 규칙
+## 6. Prisma ORM 및 트랜잭션 안전성 규칙
 - **스키마 싱크 원칙**:
-  - 모든 DB 스키마 변경은 반드시 prisma 템플릿 코드를 통해서만 이루어져야 하며, 수동으로 DB 인프라를 수정하는 행위를 금지함.
+  - 모든 DB 스키마 변경은 반드시 Prisma 템플릿 코드를 통해서만 이루어져야 하며, 수동으로 DB 인프라를 수정하는 행위를 금지함.
 - **세션 로그 트랜잭션 격리**:
   - `input_id`를 생성하고 사용자의 입력 데이터(`user_plan`, `user_demand`)를 적재하는 과정은 완벽한 하나의 데이터베이스 트랜잭션(`tx`)으로 묶어 처리할 것. 네트워크 지연이나 LLM 타임아웃이 발생하더라도 잘못된 유령 세션 로그가 DB에 남는 것을 원천 차단해야 함.
 
@@ -50,7 +50,7 @@
 
 ## 8. [Phase 5] 리팩토링 체크리스트 (API_명세서 기준)
 - [x] `sessions` 모듈을 `recommendations` 및 `plans` 역할에 맞게 분리 또는 이름 변경
-- [x] AI 추천 요청 API 엔드포인트를 `POST /api/v1/recommandations` 로 수정
+- [x] AI 추천 요청 API 엔드포인트를 `POST /api/v1/recommendations` 로 수정
 - [x] AI 추천 단건 조회 API 엔드포인트를 `GET /api/v1/recommendations/:input_id` 로 수정
-- [ ] 요금제 목록 및 상세 조회 API `GET /api/v1/plans` 추가 (선택사항, 스펙 확인용)
+- [x] 요금제 목록 및 상세 조회 API `GET /api/v1/plans` 추가 (선택사항, 스펙 확인용)
 - [x] 컨트롤러와 서비스의 메서드 네이밍을 API 스펙에 맞게 정렬

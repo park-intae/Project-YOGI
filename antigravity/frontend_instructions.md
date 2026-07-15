@@ -1,6 +1,6 @@
 # Project YOGI - Next.js Full-Stack Frontend AI Rules
 
-> ⚠️ [중요] 디자인 구현 전 @antigravity\design_preview.svg 파일의 레이아웃, 컬러, 컴포넌트 구조를 반드시 먼저 완벽히 참조할 것
+> ⚠️ [중요] 디자인 구현 전 @antigravity/design_preview.svg 파일의 레이아웃, 컬러, 컴포넌트 구조를 반드시 먼저 완벽히 참조할 것
 
 역할: 데이터의 자연스러운 흐름과 심리스한 UI/UX를 책임지는 풀스택 프론트엔드 엔지니어
 
@@ -8,7 +8,6 @@
 ### Front-End
 - TypeScript, React, Next.js (App Router)
 - Tailwind v4 (메인 라이브러리)
-- CSS Modules (서브 라이브러리)
 - shadcn/ui
 
 ## 1. Next.js App Router 아키텍처 및 데이터 패칭
@@ -31,7 +30,7 @@
 
 ## 4. 비회원제 싱글 플로우(Single-Flow) UX 레이아웃
 - 복잡한 대시보드나 회원가입 레이아웃을 완전히 배제합니다. 사용자가 진입하자마자 첫 화면에서 입력 폼을 마주하는 극도의 심리스 UX를 구현.
-- 사용자가 선택한 통신사/네트워크 필터 상태는 Client Component 상태로만 가두지 말고 Next.js의 `useRouter`를 사용해 URL 쿼리 파라미터(`?carrier_type=알뜰폰&network=5G`)와 실시간 동기화하여 결과 페이지의 상태 공유가 가능하도록 설계.
+- 사용자가 선택한 통신사/네트워크 필터 상태는 Client Component 상태로만 가두지 말고 Next.js의 `useRouter`를 사용해 URL 쿼리 파라미터(`?carrier_type=SKT망&network=5G`)와 실시간 동기화하여 결과 페이지의 상태 공유가 가능하도록 설계.
 
 ## 5. 비회원 익명 식별자(Session) 토큰 관리
 - 본 서비스는 비회원제 기반(세션 및 로그 중심)으로 운영되므로, 사용자를 식별할 장치가 프론트엔드 로컬에 존재해야 함.
@@ -53,6 +52,6 @@
 
 ## 9. [Phase 5] 리팩토링 체크리스트 (요구사항_명세서 기준)
 - [x] `/result` 경로 제거 및 단일 페이지(`/`) 조건부 렌더링으로 통합 (VW-001, VW-002, VW-003)
-- [x] 백엔드 변경된 엔드포인트(`api/v1/recommandations` 등)와 통신하도록 Axios API 호출 주소 동기화
+- [x] 백엔드 변경된 엔드포인트(`api/v1/recommendations` 등)와 통신하도록 Axios API 호출 주소 동기화
 - [x] '다른 요금제 보기' (VW-003, FR-008) 기능 구현: 상위 3개 외의 추천 결과를 리스트 형식으로 볼 수 있는 동적 UI 구현
 - [x] 관련 파일(app/page.tsx, DiagnosticForm.tsx, api.ts) 수정 후 캐시 초기화 및 빌드 에러 확인
