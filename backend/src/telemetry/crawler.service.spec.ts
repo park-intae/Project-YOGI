@@ -85,14 +85,14 @@ describe('CrawlerService', () => {
       expect(prismaService.plan.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: {
-          planUrl: 'https://www.epost.go.kr/comm.alddlord.RetrieveChargeDtl.comm?phonepaydivcd=N&bizcd=C0018&srch_telecomcd=C03&charge_idn=99',
+          planUrl: 'https://www.epost.go.kr/comm.alddlord.RetrieveChargeDtl.comm?phonepaydivcd=N&bizcd=C0018&telecomcd=C03&charge_idn=99',
         },
       });
 
       expect(prismaService.plan.update).toHaveBeenCalledWith({
         where: { id: 2 },
         data: {
-          planUrl: 'https://www.epost.go.kr/comm.alddlord.RetrieveChargeDtl.comm?phonepaydivcd=N&bizcd=C0019&srch_telecomcd=S01&charge_idn=100',
+          planUrl: 'https://www.epost.go.kr/comm.alddlord.RetrieveChargeDtl.comm?phonepaydivcd=N&bizcd=C0019&telecomcd=S01&charge_idn=100',
         },
       });
     });

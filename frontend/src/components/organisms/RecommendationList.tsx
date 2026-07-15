@@ -143,7 +143,7 @@ export default function RecommendationList({ recommendations, currentFee }: { re
                         {/* Action Button */}
                         <div className="flex items-center justify-end w-full xl:w-auto shrink-0">
                           <a 
-                            href={(rec.plan_url && rec.plan_url !== '#') ? rec.plan_url : `https://www.epost.go.kr/comm.alddl.getMVNOChargeList.comm`}
+                            href={(rec.plan_url && rec.plan_url !== '#') ? rec.plan_url : `https://www.epost.go.kr/comm.alddl.RetrieveAlddlChargeList.comm`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-5 py-2.5 border border-gray-300 text-gray-700 dark:text-gray-300 text-sm font-bold rounded-lg hover:bg-gray-50 dark:bg-slate-800 transition-colors w-full xl:w-auto text-center inline-block"

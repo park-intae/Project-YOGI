@@ -95,6 +95,7 @@ export class RecommendationsService {
         baseFee: true,
         dataAllowanceGb: true,
         voiceAllowanceMin: true,
+        planUrl: true,
       }
     });
   }
@@ -127,6 +128,7 @@ export class RecommendationsService {
         {
           rank: 1,
           plan_id: candidatePlans[0]?.id?.toString() || 'mock-id-1',
+          plan_url: candidatePlans[0]?.planUrl || null,
           carrier_name: '우체국알뜰(모빙)',
           base_network: 'SKT망',
           plan_name: '5G 다이렉트 45',
@@ -138,6 +140,7 @@ export class RecommendationsService {
         {
           rank: 2,
           plan_id: candidatePlans[1]?.id?.toString() || 'mock-id-2',
+          plan_url: candidatePlans[1]?.planUrl || null,
           carrier_name: '프리티',
           base_network: 'KT망',
           plan_name: '초이스 베이직',
@@ -149,6 +152,7 @@ export class RecommendationsService {
         {
           rank: 3,
           plan_id: candidatePlans[2]?.id?.toString() || 'mock-id-3',
+          plan_url: candidatePlans[2]?.planUrl || null,
           carrier_name: '큰사람',
           base_network: 'LGU+망',
           plan_name: '5G 안심 15GB+',
@@ -159,6 +163,7 @@ export class RecommendationsService {
         },
         {
           plan_id: candidatePlans[3]?.id?.toString() || 'mock-id-4',
+          plan_url: candidatePlans[3]?.planUrl || null,
           carrier_name: '이야기모바일',
           base_network: 'SKT망',
           plan_name: '이야기 5G 라이트',
@@ -243,11 +248,19 @@ export class RecommendationsService {
       
       const parsed = JSON.parse(responseText);
       
+      const enrichedPlans = parsed.recommended_plans.map((p: any) => {
+        const matchingPlan = candidatePlans.find(cp => cp.id.toString() === p.plan_id);
+        return {
+          ...p,
+          plan_url: matchingPlan?.planUrl || null
+        };
+      });
+
       return {
         input_id: inputId,
         recommended_at: new Date().toISOString(),
         ai_summary_comment: parsed.ai_summary_comment,
-        recommended_plans: parsed.recommended_plans
+        recommended_plans: enrichedPlans
       };
 
     } catch (error) {

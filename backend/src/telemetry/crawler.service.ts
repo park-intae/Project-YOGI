@@ -46,7 +46,11 @@ export class CrawlerService {
       // 요금제 항목 탐색: 클릭 이벤트 속성이 있는 요소를 직접 찾습니다.
       $('[onclick*="goChoicePhoneCharge"], [href*="goChoicePhoneCharge"], [onclick*="jsSelectChargeOrder"]').each(
         (i, el) => {
-          const text = $(el).text().replace(/\s+/g, ' ').trim() || $(el).closest('li, tr, div').text().replace(/\s+/g, ' ').trim();
+          const container = $(el).closest('li, tr, .alddl_list_box, .list_item');
+          const goodNmNode = container.find('.good_nm').clone();
+          goodNmNode.find('span').remove();
+          const titleText = goodNmNode.text().replace(/\s+/g, ' ').trim();
+          const text = titleText || $(el).text().replace(/\s+/g, ' ').trim() || container.text().replace(/\s+/g, ' ').trim();
           const attr = $(el).attr('onclick') || $(el).attr('href') || '';
 
           const match = attr.match(/goChoicePhoneCharge\([^)]*\)|jsSelectChargeOrder\([^)]*\)/);
@@ -69,10 +73,10 @@ export class CrawlerService {
               if (bizcd && telecomcd && charge_idn) {
                 const nameMatch = text.substring(0, 30);
                 
-                const planUrl = `https://www.epost.go.kr/comm.alddlord.RetrieveChargeDtl.comm?phonepaydivcd=N&bizcd=${bizcd}&srch_telecomcd=${telecomcd}&charge_idn=${charge_idn}`;
+                const planUrl = `https://www.epost.go.kr/comm.alddlord.RetrieveChargeDtl.comm?phonepaydivcd=N&bizcd=${bizcd}&telecomcd=${telecomcd}&charge_idn=${charge_idn}`;
 
-                // 중복 방지
-                if (!scrapedPlans.find((p) => p.charge_idn === charge_idn)) {
+                // 중복 방지 (planUrl 전체가 고유해야 함)
+                if (!scrapedPlans.find((p) => p.planUrl === planUrl)) {
                   scrapedPlans.push({
                     name: nameMatch,
                     bizcd,
@@ -96,12 +100,12 @@ export class CrawlerService {
       const dbPlans = await this.prisma.plan.findMany();
 
       for (const scraped of scrapedPlans) {
-        // 크롤링된 텍스트 중 불필요한 공백/개행 제거하여 매칭 (예: "  기본 : 기본제공" 등)
-        const normalizedScrapedName = scraped.name.replace(/\s+/g, '');
+        // 크롤링된 텍스트 중 불필요한 공백/개행/플러스기호 제거하여 매칭
+        const normalizedScrapedName = scraped.name.replace(/[\s+]+/g, '');
 
         // DB에 존재하는 요금제 중 이름이 포함되거나 일치하는 것 찾기
         const matchedDbPlan = dbPlans.find((p) => {
-          const normalizedDbName = p.planName.replace(/\s+/g, '');
+          const normalizedDbName = p.planName.replace(/[\s+]+/g, '');
           return normalizedScrapedName.includes(normalizedDbName) || normalizedDbName.includes(normalizedScrapedName);
         });
 

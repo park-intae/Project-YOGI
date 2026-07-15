@@ -127,7 +127,7 @@ const RecommendationCard = memo(function RecommendationCard({ idx, rec, currentF
 
       {/* Action Button */}
         <a 
-          href={(rec.plan_url && rec.plan_url !== '#') ? rec.plan_url : `https://www.epost.go.kr/comm.alddl.getMVNOChargeList.comm`}
+          href={(rec.plan_url && rec.plan_url !== '#') ? rec.plan_url : `https://www.epost.go.kr/comm.alddl.RetrieveAlddlChargeList.comm`}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full mt-8 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-4 rounded-xl font-bold transition-all duration-200 active:scale-[0.97]"
