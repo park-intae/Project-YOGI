@@ -146,5 +146,105 @@ describe('RecommendationsService', () => {
 
       process.env.NODE_ENV = originalEnv;
     });
+    
+    it('should correctly map plan_url from candidate plans', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      
+      (service as any).genAI = {
+        getGenerativeModel: vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockResolvedValue({
+            response: {
+              text: () => JSON.stringify({ ai_summary_comment: 'AI Response', recommended_plans: [{ plan_id: 'plan-1', rank: 1 }] })
+            }
+          })
+        })
+      };
+
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'session-123' }) } as any;
+      prisma.plan = { findMany: vi.fn().mockResolvedValue([{ id: 'plan-1', planUrl: 'http://test.com' }]) } as any;
+
+      const result = await service.getRecommendationsPrompt('input-123', 'session-123');
+      expect(result.recommended_plans[0].plan_url).toBe('http://test.com');
+
+      process.env.NODE_ENV = originalEnv;
+    });
+  });
+
+  describe('getMoreRecommendationsPrompt', () => {
+    it('should throw NotFoundException if session not found', async () => {
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue(null) } as any;
+      await expect(service.getMoreRecommendationsPrompt('invalid', 'session-123', [])).rejects.toThrow('Session data not found');
+    });
+
+    it('should throw ForbiddenException if session ID mismatch', async () => {
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'other-session' }) } as any;
+      await expect(service.getMoreRecommendationsPrompt('input-123', 'session-123', [])).rejects.toThrow('Forbidden. Session ID mismatch.');
+    });
+
+    it('should return mock fallback in test mode', async () => {
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'session-123' }) } as any;
+      prisma.plan = { findMany: vi.fn().mockResolvedValue([{ id: 'plan-1', planName: 'P1' }]) } as any;
+
+      const result = await service.getMoreRecommendationsPrompt('input-123', 'session-123', []);
+      expect(result.ai_summary_comment).toContain('임시 추가 데이터');
+      expect(result.recommended_plans.length).toBe(1);
+    });
+
+    it('should return empty result if no additional candidates are found', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'session-123' }) } as any;
+      prisma.plan = { findMany: vi.fn().mockResolvedValue([{ id: 'plan-1' }]) } as any;
+
+      const result = await service.getMoreRecommendationsPrompt('input-123', 'session-123', ['plan-1']);
+      expect(result.recommended_plans.length).toBe(0);
+      expect(result.ai_summary_comment).toBe('더 이상 추천할 수 있는 요금제가 없습니다.');
+
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should call Gemini API for more recommendations', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      
+      (service as any).genAI = {
+        getGenerativeModel: vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockResolvedValue({
+            response: {
+              text: () => JSON.stringify({ ai_summary_comment: 'More AI Response', recommended_plans: [{ plan_id: 'plan-2', rank: 4 }] })
+            }
+          })
+        })
+      };
+
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'session-123' }) } as any;
+      prisma.plan = { findMany: vi.fn().mockResolvedValue([{ id: 'plan-1' }, { id: 'plan-2', planUrl: 'http://more.com' }]) } as any;
+
+      const result = await service.getMoreRecommendationsPrompt('input-123', 'session-123', ['plan-1']);
+      expect(result.ai_summary_comment).toBe('More AI Response');
+      expect(result.recommended_plans[0].plan_url).toBe('http://more.com');
+
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should throw ServiceUnavailableException if Gemini API fails for more recommendations', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      
+      (service as any).genAI = {
+        getGenerativeModel: vi.fn().mockReturnValue({
+          generateContent: vi.fn().mockRejectedValue(new Error('API Error'))
+        })
+      };
+
+      prisma.inputSession = { findUnique: vi.fn().mockResolvedValue({ sessionId: 'session-123' }) } as any;
+      prisma.plan = { findMany: vi.fn().mockResolvedValue([{ id: 'plan-2' }]) } as any;
+
+      await expect(service.getMoreRecommendationsPrompt('input-123', 'session-123', [])).rejects.toThrowError('AI 분석 시간이 초과되었거나 실패했습니다');
+
+      process.env.NODE_ENV = originalEnv;
+    });
   });
 });

@@ -102,7 +102,7 @@
 - [x] AI 모델(`RecommendationsService`) 추천 후보군 축소 (10개 -> 5개)를 통한 토큰 처리 속도 최적화
 - [x] 백엔드 AI 분석 로직에 20초 제한 타임아웃(`Promise.race`) 안전장치 적용
 - [x] 503 Service Unavailable 에러를 프론트엔드로 반환하도록 예외 스펙 수정 및 Vitest 테스트 갱신
-- [x] 프론트엔드(`RecommendationContentClient`)에서 백엔드 503 에러 발생 시 Next.js 오버레이를 방지하고, 에러 배너와 함께 임시 '목업(Mock)' 요금제 데이터를 렌더링하도록 롤백 및 고도화
+- [x] 프론트엔드(`RecommendationContentClient`)에서 백엔드 503 에러 발생 시 Next.js 오버레이 노출을 방지하고, 혼란을 주는 목업 데이터 대신 명확한 에러 안내와 '다시 시도하기' CTA 버튼을 제공하도록 예외 처리 고도화
 - [x] UI 디테일 개선: 2위 카드 은색 그림자 시인성 강화 (`shadow-gray-300/50`), 순위 뱃지 줄바꿈 방지 (`whitespace-nowrap shrink-0`)
 - [x] 요금제 추천 카드 호버 시 발생하는 레이아웃 오버플로우(테두리 잘림) 문제 구조적 해결:
   - `AccordionReveal` 바깥의 패딩을 안쪽으로 밀어 넣어 확장 안전 구역(Safe Zone) 확보 (오리지널 레이아웃 `max-w-6xl`, `gap-6` 완벽 유지)

@@ -20,24 +20,8 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
         const response = await yogiApi.getRecommendations(inputId);
         setData(response);
       } catch (err: any) {
-        const is503 = err.response?.status === 503;
         const errorMessage = err.response?.data?.message || '추천 결과를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.';
         setError(errorMessage);
-        
-        if (is503) {
-          // Fallback to mockup data so the user can still see something
-          setData({
-            input_id: inputId as string,
-            recommended_at: new Date().toISOString(),
-            ai_summary_comment: 'Gemini AI 호출량 초과로 인해 제공되는 임시(Mock) 추천 결과입니다.',
-            recommended_plans: [
-              { rank: 1, plan_id: 'm1', carrier_name: '우체국 알뜰폰', base_network: 'SKT', plan_name: '스마일 100분 15GB+', price: 15900, data_allowance: 15, data_speed_limit: 3, expected_savings: 73100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' },
-              { rank: 2, plan_id: 'm2', carrier_name: '이야기모바일', base_network: 'U+', plan_name: '이야기 안심 15GB+', price: 18900, data_allowance: 15, data_speed_limit: 3, expected_savings: 70100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' },
-              { rank: 3, plan_id: 'm3', carrier_name: 'KCT', base_network: 'KT', plan_name: '티플 15GB+', price: 19900, data_allowance: 15, data_speed_limit: 3, expected_savings: 69100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' },
-              { rank: 4, plan_id: 'm4', carrier_name: '프리티', base_network: 'SKT', plan_name: '프리티 데이터 11GB+', price: 23900, data_allowance: 11, data_speed_limit: 3, expected_savings: 65100, plan_url: 'https://www.epost.go.kr/comm/alddl/alddl02k001.jsp' }
-            ]
-          });
-        }
       } finally {
         setLoading(false);
         if (typeof window !== 'undefined') {
@@ -79,8 +63,13 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
   if (!data) {
     return (
       <div className="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-8 mt-12 text-center border border-red-100">
-        <p className="text-red-500 mb-6 font-medium">{error || '데이터가 없습니다.'}</p>
-        <Link href="/" className="inline-block text-blue-600 hover:text-blue-700 font-medium underline">홈으로 돌아가기</Link>
+        <div className="text-red-500 mb-4 text-4xl">⚠️</div>
+        <p className="text-gray-800 dark:text-gray-200 mb-6 font-medium leading-relaxed">
+          {error || '추천 결과를 불러오는 데 실패했습니다.'}
+        </p>
+        <Link href="/" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+          홈으로 돌아가 다시 시도하기
+        </Link>
       </div>
     );
   }

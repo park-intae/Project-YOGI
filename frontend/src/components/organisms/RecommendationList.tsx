@@ -56,8 +56,8 @@ export default function RecommendationList({ recommendations, currentFee, inputI
     
     switch (carrierFilter) {
       case 'SKT망': return baseNetwork.includes('SKT');
-      case 'KT망': return baseNetwork.includes('KT');
-      case 'LGU+망': return baseNetwork.includes('LGU+');
+      case 'KT망': return baseNetwork.includes('KT') && !baseNetwork.includes('SKT');
+      case 'LGU+망': return baseNetwork.includes('LGU+') || baseNetwork.includes('LG U+');
       default: return true;
     }
   });

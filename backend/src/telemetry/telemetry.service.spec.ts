@@ -3,6 +3,7 @@ import { TelemetryService } from './telemetry.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpService } from '@nestjs/axios';
+import { CrawlerService } from './crawler.service';
 import * as fs from 'fs';
 
 vi.mock('fs', () => ({
@@ -49,6 +50,10 @@ describe('TelemetryService', () => {
         {
           provide: HttpService,
           useValue: mockHttpService,
+        },
+        {
+          provide: CrawlerService,
+          useValue: { updatePlanUrls: vi.fn() },
         },
       ],
     }).compile();
