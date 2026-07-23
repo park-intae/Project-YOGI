@@ -11,6 +11,7 @@ interface AccordionRevealProps {
 export default function AccordionReveal({ children, isOpen, className = '' }: AccordionRevealProps) {
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isExpanding, setIsExpanding] = useState(false);
+  const [isFullyOpen, setIsFullyOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousHeightRef = useRef<number>(0);
 
@@ -21,10 +22,18 @@ export default function AccordionReveal({ children, isOpen, className = '' }: Ac
       return () => clearTimeout(timer);
     } else {
       setIsExpanding(false);
+      setIsFullyOpen(false);
       const timer = setTimeout(() => setShouldRender(false), 700);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isExpanding) {
+      const timer = setTimeout(() => setIsFullyOpen(true), 700); // 700ms matches duration-700
+      return () => clearTimeout(timer);
+    }
+  }, [isExpanding]);
 
   useEffect(() => {
     if (!containerRef.current || !isExpanding) return;
@@ -58,7 +67,7 @@ export default function AccordionReveal({ children, isOpen, className = '' }: Ac
         isExpanding ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
       } ${className}`}
     >
-      <div className="overflow-hidden min-h-0">
+      <div className={`${isFullyOpen ? 'overflow-visible' : 'overflow-hidden'} min-h-0`}>
         {children}
       </div>
     </div>

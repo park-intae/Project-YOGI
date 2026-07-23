@@ -9,6 +9,8 @@ import AccordionReveal from '@/components/molecules/AccordionReveal';
 
 export default function RecommendationContentClient({ inputId }: { inputId: string }) {
   const [data, setData] = useState<RecommendationResponseDto | null>(null);
+  const [summaryData, setSummaryData] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCriteriaModal, setShowCriteriaModal] = useState(false);
@@ -19,6 +21,17 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
       try {
         const response = await yogiApi.getRecommendations(inputId);
         setData(response);
+        
+        // 투트랙(Two-Track): 요금제 데이터를 먼저 받고, 요약 코멘트를 비동기로 백그라운드 호출
+        setSummaryLoading(true);
+        yogiApi.getRecommendationSummary(inputId)
+          .then(res => setSummaryData(res.ai_summary_comment))
+          .catch(err => {
+             console.error("AI 요약 로드 실패", err);
+             setSummaryData("AI 요약을 불러오는 데 실패했습니다.");
+          })
+          .finally(() => setSummaryLoading(false));
+
       } catch (err: any) {
         const errorMessage = err.response?.data?.message || '추천 결과를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.';
         setError(errorMessage);
@@ -75,7 +88,6 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
   }
 
   const recommendations = data.recommended_plans || [];
-  const aiSummary = data.ai_summary_comment || '';
   const currentFee = 89000; // Mock current fee based on design
 
   return (
@@ -129,11 +141,16 @@ export default function RecommendationContentClient({ inputId }: { inputId: stri
           </div>
         )}
 
-        {aiSummary && (
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
-            <p className="text-sm text-blue-800 font-medium">{aiSummary}</p>
+        {summaryLoading ? (
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-center space-x-3 animate-pulse">
+            <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+            <p className="text-sm text-blue-800 font-medium">AI가 요금제를 분석 중입니다...</p>
           </div>
-        )}
+        ) : summaryData ? (
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+            <p className="text-sm text-blue-800 font-medium whitespace-pre-line leading-relaxed">{summaryData}</p>
+          </div>
+        ) : null}
 
         {recommendations.length > 0 ? (
           <RecommendationList recommendations={recommendations} currentFee={currentFee} inputId={data.input_id} />

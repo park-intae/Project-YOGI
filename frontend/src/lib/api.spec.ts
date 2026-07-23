@@ -83,6 +83,15 @@ describe('api.ts', () => {
       expect(apiClient.get).toHaveBeenCalledWith('/v1/recommendations/123/more', { params: { excluded_ids: 'id1,id2', dev_mode: false } });
     });
 
+    it('getRecommendationSummary', async () => {
+      const mockResponse = { ai_summary_comment: 'test summary' };
+      vi.spyOn(apiClient, 'get').mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await yogiApi.getRecommendationSummary('123');
+      expect(result).toEqual(mockResponse);
+      expect(apiClient.get).toHaveBeenCalledWith('/v1/recommendations/123/summary', { params: { dev_mode: false } });
+    });
+
     it('getPlans', async () => {
       const mockResponse = [{ id: 'plan1' }];
       vi.spyOn(apiClient, 'get').mockResolvedValueOnce({ data: mockResponse });

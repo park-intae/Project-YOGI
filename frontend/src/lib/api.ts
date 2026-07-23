@@ -72,8 +72,12 @@ export interface RecommendedPlanDto {
 export interface RecommendationResponseDto {
   input_id: string;
   recommended_at: string;
-  ai_summary_comment: string;
+  ai_summary_comment?: string;
   recommended_plans: RecommendedPlanDto[];
+}
+
+export interface RecommendationSummaryDto {
+  ai_summary_comment: string;
 }
 
 export interface PlanFilterParams {
@@ -108,6 +112,17 @@ export const yogiApi = {
     const excludedIdsStr = excludedIds.join(',');
     const response = await apiClient.get<RecommendationResponseDto>(`/v1/recommendations/${inputId}/more`, {
       params: { excluded_ids: excludedIdsStr, dev_mode: devMode }
+    });
+    return response.data;
+  },
+
+  getRecommendationSummary: async (inputId: string): Promise<RecommendationSummaryDto> => {
+    let devMode = false;
+    if (typeof window !== 'undefined') {
+      devMode = localStorage.getItem('dev_mode') === 'true';
+    }
+    const response = await apiClient.get<RecommendationSummaryDto>(`/v1/recommendations/${inputId}/summary`, {
+      params: { dev_mode: devMode }
     });
     return response.data;
   },

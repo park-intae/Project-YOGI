@@ -27,9 +27,9 @@ export class RecommendationsController {
 
   @Get('recommendations/:input_id')
   @UseGuards(SessionGuard)
-  @ApiOperation({ summary: 'Get AI recommendations based on input_id' })
+  @ApiOperation({ summary: 'Get plan recommendations data based on input_id (Fast)' })
   @ApiHeader({ name: 'X-Session-ID', description: 'Unique identifier for the user session', required: true })
-  @ApiResponse({ status: 200, description: 'Prompt generated successfully.' })
+  @ApiResponse({ status: 200, description: 'Recommendations data generated successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'Not found.' })
@@ -39,7 +39,21 @@ export class RecommendationsController {
     @Query('dev_mode') devMode?: string,
   ) {
     const isDevMode = devMode === 'true';
-    return this.recommendationsService.getRecommendationsPrompt(inputId, sessionId, isDevMode);
+    return this.recommendationsService.getRecommendationsData(inputId, sessionId, isDevMode);
+  }
+
+  @Get('recommendations/:input_id/summary')
+  @UseGuards(SessionGuard)
+  @ApiOperation({ summary: 'Get AI generated summary for the recommended plans' })
+  @ApiHeader({ name: 'X-Session-ID', description: 'Unique identifier for the user session', required: true })
+  @ApiResponse({ status: 200, description: 'Summary generated successfully.' })
+  async getRecommendationSummary(
+    @Param('input_id', new ParseUUIDPipe({ version: '4' })) inputId: string,
+    @SessionId() sessionId: string,
+    @Query('dev_mode') devMode?: string,
+  ) {
+    const isDevMode = devMode === 'true';
+    return this.recommendationsService.getRecommendationSummary(inputId, sessionId, isDevMode);
   }
 
   @Get('recommendations/:input_id/more')
@@ -55,6 +69,6 @@ export class RecommendationsController {
   ) {
     const isDevMode = devMode === 'true';
     const excludedIds = excludedIdsStr ? excludedIdsStr.split(',') : [];
-    return this.recommendationsService.getMoreRecommendationsPrompt(inputId, sessionId, excludedIds, isDevMode);
+    return this.recommendationsService.getMoreRecommendationsData(inputId, sessionId, excludedIds, isDevMode);
   }
 }

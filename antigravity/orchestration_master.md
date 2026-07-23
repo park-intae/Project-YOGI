@@ -126,19 +126,24 @@
 - [x] 백엔드 `RecommendationsController` 및 `RecommendationsService`에 추가 추천 페이징 API(`GET /api/v1/recommendations/:input_id/more`) 설계
 - [x] 기존 추천된 요금제를 제외한 차순위 후보군(예: 4위~8위)을 추출하는 로직 및 AI 프롬프트(`recommendation_more_v1.md`) 분리 작성
 - [x] 프론트엔드 `yogiApi`에 추가 추천 API 호출 함수 연동
-- [x] 프론트엔드 `RecommendationList.tsx` 컴포넌트의 버튼 클릭 시 비동기 로딩(Spinner) 상태 관리 추가
-- [x] 프론트엔드 배열 병합(Append) 로직 및 자연스러운 애니메이션 렌더링 유지
+### [Phase 17] AI 응답 시간 단축 및 투트랙(Two-Track) 아키텍처 도입 (완료)
+- [x] 추천 요금제 데이터 응답과 AI 요약 코멘트 응답의 API 분리 (Data API / AI Summary API)
+- [x] 백엔드(`RecommendationsService`): 요금제 추천 로직은 순수 DB 쿼리와 연산(예상 절감액 등)으로 즉각 반환하도록 수정 (< 100ms)
+- [x] 백엔드(`RecommendationsService`): AI는 반환된 요금제를 기반으로 '추천 이유'만 짧게 생성하는 전용 엔드포인트(`.../summary`) 구축
+- [x] 프론트엔드: 요금제 카드 렌더링을 먼저 즉시 보여주고, AI 추천 이유는 스켈레톤 UI를 띄운 뒤 비동기로 불러오도록 UI/UX 고도화
+- [x] AI 모델 파라미터 튜닝 (`temperature: 0` 등 결정론적 텍스트 생성) 및 프롬프트 최적화
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-07-21T18:55:00+09:00
+- **일시**: 2026-07-23T23:40:00+09:00
 - **완료된 작업**:
-  - 백엔드 `TelemetryService` 단위 테스트의 의존성 주입(`CrawlerService`) 누락 에러 해결 (백엔드 커버리지 74.6% 달성).
-  - 프론트엔드 `RecommendationList`의 'KT망' 필터 클릭 시 'SKT망' 요금제가 노출되는 부분 문자열 매칭(Substring Matching) 버그 발견 및 수정.
-  - 프론트엔드 API 통신 모듈(`lib/api.ts`) 및 유틸리티(`lib/carrier.ts`)에 대한 단위 테스트 신규 작성.
-  - Chart.js 커스텀 툴팁 로직(`ConcentricDonutChart.tsx`) 렌더링 검증 테스트 케이스 작성 완수.
-  - 프론트엔드 테스트 커버리지 88.1% 달성 (기존 56% 대비 대폭 상승).
+  - Phase 17 투트랙(Two-Track) 아키텍처 도입 및 최적화 완료.
+  - 백엔드 요금제 추천 로직을 순수 DB 기반(AI 배제)으로 전환하여 속도 극대화 완료 (`getRecommendationsData`, `getMoreRecommendationsData`).
+  - 사용되지 않게 된 기존 프롬프트(`recommendation_v1.md`, `recommendation_more_v1.md`)는 향후 활용을 위해 요약 변수만 제거하고 복구(보존) 완료.
+  - AI 요약 전용 프롬프트(`recommendation_summary_v1.md`)에 `\n` 명시 및 프론트엔드 `whitespace-pre-line` 적용으로 1~3위 요약 줄바꿈 가독성 개선.
+  - Gemini API 호출 시 `gemini-2.5-flash` 단일 모델 호출로 간소화 (불필요한 재시도 루프 제거).
+  - 관련된 백엔드 및 프론트엔드 단위 테스트(Vitest) 완벽 갱신 및 Pass 완료 (DB 미연결로 인한 E2E 에러는 제외).
 - **중단점 및 다음 작업 (Next Steps)**:
-  - 테스트 커버리지 상향 및 기능 안정화 작업이 성공적으로 완료됨. 기능 점검 후 추가 기획 요구사항 및 UI/UX 개선 사항 대기.
+  - Phase 17 마무리 완료. 대표님의 다음 기획(Phase 18 등) 지시 대기 중.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
