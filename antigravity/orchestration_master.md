@@ -132,18 +132,34 @@
 - [x] 백엔드(`RecommendationsService`): AI는 반환된 요금제를 기반으로 '추천 이유'만 짧게 생성하는 전용 엔드포인트(`.../summary`) 구축
 - [x] 프론트엔드: 요금제 카드 렌더링을 먼저 즉시 보여주고, AI 추천 이유는 스켈레톤 UI를 띄운 뒤 비동기로 불러오도록 UI/UX 고도화
 - [x] AI 모델 파라미터 튜닝 (`temperature: 0` 등 결정론적 텍스트 생성) 및 프롬프트 최적화
+### [Phase 18] Monorepo 도구 도입 및 구성
+- [x] **워크스페이스 구조 개편 (npm workspaces 적용)**
+  - [x] 루트 `package.json`에 `workspaces` 속성 추가 (`apps/*`, `packages/*` 구조)
+  - [x] 기존 `frontend` 및 `backend` 폴더를 `apps/frontend`, `apps/backend`로 이동
+- [x] **공통 패키지(`packages`) 구성 및 분리**
+  - [x] `packages/shared-types` 생성: 프론트/백엔드가 공유하는 DTO 및 Prisma 모델 기반 타입 분리 (완료)
+  - [x] `packages/eslint-config` 생성: 프로젝트 전역 공통 린트 규칙 세팅 (완료)
+  - [x] `packages/typescript-config` 생성: 공통 `tsconfig.json` 베이스 세팅 (완료)
+- [x] **패키지 간 내부 의존성 연결**
+  - [x] `apps/frontend` 및 `apps/backend`의 `package.json`에서 사내 패키지(`@yogi/shared-types` 등) 참조하도록 설정
+- [x] **Turborepo 도입 및 파이프라인 구축**
+  - [x] 루트 프로젝트에 `turbo` 패키지 설치
+  - [x] `turbo.json` 설정 파일 작성: `build`, `dev`, `lint`, `test` 등 파이프라인 의존성 및 캐싱 룰 정의
+- [x] **실행 스크립트 및 환경 검증**
+  - [x] 루트 `package.json`의 기존 `concurrently` 기반 스크립트를 `turbo run dev`, `turbo run build`로 대체
+  - [x] 전체 의존성 설치(Hoisting 확인), 병렬 빌드 및 실행 정상 동작 테스트
+  - [x] 기존 Vitest 및 Supertest 통과 여부 최종 점검
 
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-07-23T23:40:00+09:00
+- **일시**: 2026-07-26T16:33:00+09:00
 - **완료된 작업**:
-  - Phase 17 투트랙(Two-Track) 아키텍처 도입 및 최적화 완료.
-  - 백엔드 요금제 추천 로직을 순수 DB 기반(AI 배제)으로 전환하여 속도 극대화 완료 (`getRecommendationsData`, `getMoreRecommendationsData`).
-  - 사용되지 않게 된 기존 프롬프트(`recommendation_v1.md`, `recommendation_more_v1.md`)는 향후 활용을 위해 요약 변수만 제거하고 복구(보존) 완료.
-  - AI 요약 전용 프롬프트(`recommendation_summary_v1.md`)에 `\n` 명시 및 프론트엔드 `whitespace-pre-line` 적용으로 1~3위 요약 줄바꿈 가독성 개선.
-  - Gemini API 호출 시 `gemini-2.5-flash` 단일 모델 호출로 간소화 (불필요한 재시도 루프 제거).
-  - 관련된 백엔드 및 프론트엔드 단위 테스트(Vitest) 완벽 갱신 및 Pass 완료 (DB 미연결로 인한 E2E 에러는 제외).
+  - Phase 18 모노레포 도입 작업 완벽 종료.
+  - `apps/*` 및 `packages/*` npm workspaces 폴더 구조 개편.
+  - Turborepo 초기 설정(`turbo.json`), 루트 스크립트 수정 및 빌드/테스트 캐싱 점검 통과.
+  - 공통 패키지(`shared-types`)에 DTO 이관 완료 및 프론트/백엔드 연동 확인.
+  - 공통 설정(`typescript-config`, `eslint-config`) 분리 및 각 앱(App)에 적용 완료.
 - **중단점 및 다음 작업 (Next Steps)**:
-  - Phase 17 마무리 완료. 대표님의 다음 기획(Phase 18 등) 지시 대기 중.
+  - 모노레포 인프라 구축(Phase 18) 완료. 다음 계획 수립 및 개발 마일스톤에 따른 신규 기능(Phase 19~) 진행 대기 중.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
