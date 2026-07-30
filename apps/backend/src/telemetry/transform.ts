@@ -12,7 +12,7 @@ async function bootstrap() {
     await app.close();
     process.exit(0);
   } catch (error) {
-    console.error(`Transform Failed: ${error.message}`);
+    console.error(`Transform Failed: ${(error as Error).message}`);
     await app.close();
     process.exit(1);
   }

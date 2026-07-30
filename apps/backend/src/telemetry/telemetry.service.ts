@@ -43,7 +43,7 @@ export class TelemetryService {
       );
     } catch (error) {
       this.logger.error(
-        `[Cron Pipeline] Daily Telemetry pipeline failed. Error: ${error.message}`,
+        `[Cron Pipeline] Daily Telemetry pipeline failed. Error: ${(error as Error).message}`,
       );
     }
   }
@@ -63,7 +63,7 @@ export class TelemetryService {
       );
       const mockFilePath = path.join(
         process.cwd(),
-        '../antigravity/mocks/epost_mvno_mock.json',
+        '../../antigravity/mocks/epost_mvno_mock.json',
       );
       if (!fs.existsSync(mockFilePath)) {
         throw new Error(`Mock file not found at ${mockFilePath}`);
@@ -136,9 +136,9 @@ export class TelemetryService {
       };
     } catch (error) {
       this.logger.error(
-        `[Ingest] External API Error occurred: ${error.message}`,
+        `[Ingest] External API Error occurred: ${(error as Error).message}`,
       );
-      throw new Error(`API_ERROR: ${error.message}`);
+      throw new Error(`API_ERROR: ${(error as Error).message}`);
     }
   }
 
@@ -164,7 +164,7 @@ export class TelemetryService {
         selectedCase = await this.fetchData(targetCaseId);
         break; // 성공 시 루프 탈출
       } catch (error) {
-        if (error.message.includes('API_ERROR') && attempt < maxRetries) {
+        if ((error as Error).message.includes('API_ERROR') && attempt < maxRetries) {
           attempt++;
           this.logger.warn(
             `[Ingest] API_ERROR occurred. Retrying in ${delay}ms... (Attempt ${attempt}/${maxRetries})`,
@@ -264,7 +264,7 @@ export class TelemetryService {
         updatedCount++;
       } catch (error) {
         this.logger.error(
-          `[Transform] Failed to transform plan ID: ${plan.id}. Error: ${error.message}`,
+          `[Transform] Failed to transform plan ID: ${plan.id}. Error: ${(error as Error).message}`,
         );
         // throw error; // 에러가 발생해도 중단하지 않고 다음 요금제 처리 진행 (배치 로깅 형태)
       }

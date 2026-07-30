@@ -159,7 +159,7 @@ export class CrawlerService {
         failed: failedCount,
       };
     } catch (error) {
-      this.logger.error('Failed to fetch/parse the target site.', error.stack);
+      this.logger.error('Failed to fetch/parse the target site.', (error as Error).stack);
       throw error;
     }
   }

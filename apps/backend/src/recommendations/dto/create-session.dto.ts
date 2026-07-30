@@ -17,7 +17,7 @@ import type {
 export class CurrentPlanDto implements ICurrentPlanDto {
   @ApiProperty({ example: 'KT', description: '현재 이용 중인 통신사' })
   @IsString()
-  actual_carrier: string;
+  actual_carrier!: string;
 
   @ApiProperty({
     required: false,
@@ -30,22 +30,22 @@ export class CurrentPlanDto implements ICurrentPlanDto {
 
   @ApiProperty({ example: 'LTE 데이터ON', description: '현재 요금제명' })
   @IsString()
-  actual_plan_name: string;
+  actual_plan_name!: string;
 
   @ApiProperty({ example: 69000, description: '기본료' })
   @IsInt()
-  actual_monthly_fee: number;
+  actual_monthly_fee!: number;
 
   @ApiProperty({ example: 15.5, description: '기본 제공 데이터 (GB)' })
   @IsNumber()
-  actual_data_usage: number;
+  actual_data_usage!: number;
 
   @ApiProperty({
     example: 180,
     description: '기본 제공 음성통화 (분, 무제한은 -1 등)',
   })
   @IsInt()
-  actual_voice_usage: number;
+  actual_voice_usage!: number;
 }
 
 export class DemandConditionDto implements IDemandConditionDto {
@@ -93,7 +93,7 @@ export class CreateSessionDto implements ICreateSessionDto {
   })
   @IsString()
   @IsIn(['PLAN', 'DEMAND', 'BOTH'])
-  input_type: 'PLAN' | 'DEMAND' | 'BOTH';
+  input_type!: 'PLAN' | 'DEMAND' | 'BOTH';
 
   @ApiProperty({ required: false, type: CurrentPlanDto })
   @IsOptional()

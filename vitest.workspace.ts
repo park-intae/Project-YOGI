@@ -1,4 +1,4 @@
 export default [
-  'backend',
-  'frontend'
+  'apps/backend',
+  'apps/frontend'
 ];

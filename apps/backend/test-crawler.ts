@@ -68,7 +68,7 @@ async function run() {
     }
     
   } catch (error) {
-    console.error('Error fetching page:', error.message);
+    console.error('Error fetching page:', (error as Error).message);
   }
 }
 

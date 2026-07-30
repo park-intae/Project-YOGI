@@ -17,7 +17,7 @@ import { getCarrierFilter } from '../common/utils/carrier.util';
 @Injectable()
 export class RecommendationsService {
   private readonly logger = new Logger(RecommendationsService.name);
-  private genAI: GoogleGenerativeAI;
+  private genAI!: GoogleGenerativeAI;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -275,7 +275,7 @@ export class RecommendationsService {
     try {
       const promptPath = path.join(
         process.cwd(),
-        '../antigravity/prompts/recommendation_summary_v1.md',
+        '../../antigravity/prompts/recommendation_summary_v1.md',
       );
       let promptTemplate = fs.readFileSync(promptPath, 'utf-8');
 
@@ -334,7 +334,7 @@ export class RecommendationsService {
         ai_summary_comment: parsed.ai_summary_comment,
       };
     } catch (error) {
-      this.logger.error(`AI Summary failed: ${error.message}`);
+      this.logger.error(`AI Summary failed: ${(error as Error).message}`);
       throw new ServiceUnavailableException('AI 요약 생성 실패');
     }
   }
