@@ -1,6 +1,8 @@
 import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
 
+process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://yogi_user:yogi_password@localhost:5432/yogi_db?schema=public';
+
 export default defineConfig({
   test: {
     globals: true,

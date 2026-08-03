@@ -24,8 +24,16 @@ describe('RecommendationsController (e2e)', () => {
 
   afterAll(async () => {
     // Clean up created session
-    await prisma.inputSession.deleteMany({});
-    await app.close();
+    if (prisma) {
+      try {
+        await prisma.inputSession.deleteMany({});
+      } catch (err) {
+        // Ignore DB connection errors during cleanup
+      }
+    }
+    if (app) {
+      await app.close();
+    }
   });
 
   it('/api/v1/recommendations (POST) - should fail if X-Session-ID is missing', () => {

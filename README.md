@@ -1,14 +1,15 @@
 <div align="center">
 
-# 📱 Project YOGI (v1.1)
-**알뜰폰 요금제 AI 맞춤 추천 플랫폼**
+# 📱 Project YOGI (v1.12)
+**알뜰폰 요금제 AI 맞춤 추천 모노레포 플랫폼**
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat&logo=next.js)
 ![NestJS](https://img.shields.io/badge/NestJS-11.0-E0234E?style=flat&logo=nestjs)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat&logo=typescript)
+![Turborepo](https://img.shields.io/badge/Turborepo-2.10-EF4444?style=flat&logo=turborepo)
+![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?style=flat&logo=docker)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=flat&logo=githubactions)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=flat&logo=tailwind-css)
-![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=flat&logo=vitest)
 
 *"사용자의 통신비를 진단하고 최적의 알뜰폰 요금제를 AI가 즉시 제안하는 극도의 심리스(Seamless) 서비스"*
 
@@ -19,80 +20,96 @@
 ## 🎯 프로젝트 주요 목표 (Project Goals)
 
 - **비회원 기반 극도의 심리스 UX (Seamless UX)**: 대시보드나 복잡한 회원가입 없이, 접속 즉시 폼을 입력하고 추천 결과를 확인하는 단일 페이지(Single-Flow) 레이아웃.
-- **AI 정밀 큐레이션**: LLM(Gemini)을 활용해 사용자의 현재 데이터/통화량과 무제한 여부 등의 선호도를 분석하고, 가장 경제적인 **TOP 3 알뜰폰 요금제**를 맞춤 추천합니다.
-- **Data-centric 파이프라인**: 우체국 알뜰폰 크롤링 및 API 데이터를 가공하여 DB에 적재하며, AI 프롬프트를 데이터로 격리(Markdown)하여 런타임 안정성을 높입니다.
-- **강력한 회복 탄력성 (Resilience)**: 외부 API 장애 및 LLM 응답 지연(20초 타임아웃) 시 스켈레톤 UI와 목업(Mock) 데이터로 안전하게 Fallback 렌더링을 보장합니다.
+- **알뜰폰 전용 정밀 큐레이션 (Pivot)**: MNO 통신 3사 의존성을 제거하고, 알뜰폰 요금제와 망(Network) 기반으로 사용자의 최적 절약 금액 및 맞춤 추천을 계산.
+- **투트랙(Two-Track) AI 추천 아키텍처**: 요금제 데이터 계산 응답(<100ms)과 AI 요약 코멘트를 분리하여 빠른 사용자 경험 제공.
+- **Data-centric 파이프라인**: 우체국 알뜰폰 스크래퍼 및 API 데이터를 가공하여 DB에 적재하며, AI 프롬프트를 데이터로 격리(Markdown)하여 런타임 안정성 증대.
+- **모노레포 및 CI/CD 자동화**: npm Workspaces + Turborepo 기반 아키텍처와 Docker 멀티 스테이지 빌드, GitHub Actions 파이프라인 구성.
 
 ---
 
-## 🌟 v1.1 업데이트 내역 (Load More AI Recommendations)
-- **비동기 추가 추천 (Load More)**: 최초 추천 시 빠른 UX를 위해 상위 3개 요금제만 즉시 제공하고, "다른 요금제 더 보기" 버튼 클릭 시 비동기로 Gemini AI를 새로 호출하여 차순위 추천 요금제를 자연스럽게 Append 하는 기능을 구현했습니다.
-- **프롬프트 파이프라인 분리**: 초기 분석과 추가 분석의 뉘앙스를 분리하기 위해 전용 프롬프트(`recommendation_more_v1.md`)를 신설하여 AI 큐레이션 품질을 한 차원 높였습니다.
-- **비동기 UX 폴리싱**: 추천 대기 시간 동안 버튼 내 로딩 스피너를 노출하고, 배열 데이터 병합 후 부드러운 아코디언 애니메이션으로 전환되도록 프론트엔드 상태 관리를 고도화했습니다.
+## 🌟 주요 업그레이드 내역 (Phases 16~19)
+
+- **Phase 16 - 비동기 추가 추천 (Load More)**: 상위 3개 요금제 외 차순위 요금제 추가 추천을 위한 비동기 전용 AI 프롬프트(`recommendation_more_v1.md`) 구축.
+- **Phase 17 - 투트랙(Two-Track) AI 속도 혁신**: 요금제 데이터 즉시 반환(<100ms) 후 AI 요약 코멘트를 비동기(`.../summary`)로 페칭하는 투트랙 UX 도입.
+- **Phase 18 - Turborepo 모노레포 도입**: `apps/frontend`, `apps/backend`, `packages/shared-types` 구조로 전면 재구성하고 Turborepo 캐시 및 빌드 파이프라인 구축.
+- **Phase 19 - CI/CD 파이프라인 & Docker 자동화**: GitHub Actions CI (`ci.yml`), CD (`cd.yml`), 멀티 스테이지 Dockerfile 및 `docker-compose.yml` 오케스트레이션 구성.
 
 ---
 
 ## 🏗️ 시스템 아키텍처 개요 (Architecture)
 
-본 프로젝트는 **모노레포(Monorepo)** 구조로 프론트엔드와 백엔드가 완벽하게 분리된 채 통합 구동됩니다.
+본 프로젝트는 **Turborepo 모노레포(Monorepo)** 구조로 패키지와 애플리케이션이 효율적으로 관리됩니다.
 
 ```mermaid
 graph LR
-    A[Frontend: Next.js App Router] -->|API Call: /api/v1/recommendations| B[Backend: NestJS]
+    A[Frontend: apps/frontend] -->|API Call: /api/v1/recommendations| B[Backend: apps/backend]
     B --> C[(PostgreSQL / Prisma)]
     B -->|Ingest / Scrape| D[우체국 알뜰폰 API / Web]
-    B -->|Evaluation Loop| E[Google Gemini AI]
-    C --> B
+    B -->|Two-Track Evaluation| E[Google Gemini AI]
+    F[packages/shared-types] -.-> A
+    F[packages/shared-types] -.-> B
 ```
 
-- **Frontend (`/frontend`)**: RSC(React Server Components)를 적극 활용한 Next.js App Router 아키텍처. Tailwind v4와 shadcn/ui 기반의 모바일 퍼스트 반응형 UI 구현.
-- **Backend (`/backend`)**: NestJS 기반의 3계층 아키텍처. Prisma ORM 트랜잭션으로 사용자 익명 세션(`input_id`)을 관리하며, 스케줄러(`telemetry`)를 통해 매일 새벽 요금제 데이터를 동기화합니다.
+### 디렉터리 구조
+```text
+project_yogi/
+├── apps/
+│   ├── frontend/              # Next.js 클라이언트 및 UI 로직 (포트 3001)
+│   └── backend/               # NestJS 서버, AI 파이프라인 및 크롤러 (포트 3002)
+├── packages/
+│   ├── shared-types/          # 프론트/백엔드 공유 DTO 및 타입 정의
+│   ├── eslint-config/         # 프로젝트 전역 공유 ESLint 규칙
+│   └── typescript-config/     # 공유 TypeScript configuration
+├── .github/workflows/         # CI/CD 자동화 워크플로우 (ci.yml, cd.yml)
+├── docker-compose.yml         # 멀티 컨테이너 로컬/CI 오케스트레이션
+├── turbo.json                 # Turborepo 빌드 & 캐싱 설정
+└── antigravity/               # 프로젝트 코어 AI 에이전트 지침 및 프롬프트
+    ├── orchestration_master.md# 프로젝트 마일스톤 및 마스터 체크리스트
+    ├── frontend_instructions.md# 프론트엔드 룰셋
+    ├── backend_instructions.md # 백엔드 룰셋
+    ├── harness.yaml           # CI/CD 및 파이프라인 검증 룰셋
+    └── prompts/               # AI (Gemini) 프롬프트 템플릿 마크다운 파일
+```
 
 ---
 
 ## 🚀 시작하기 (Getting Started)
 
-프로젝트를 로컬 환경에서 구동하기 위한 가이드입니다.
-
 ### 1. 사전 요구 사항 (Prerequisites)
-- Node.js v18 이상
-- PostgreSQL (로컬 또는 클라우드 DB)
+- Node.js v20 이상
+- Docker 및 Docker Compose (컨테이너 실행 시)
+- PostgreSQL (로컬 또는 Docker 컨테이너)
 - Google Gemini API Key
 
-### 2. 프로젝트 설치 및 환경 설정
-루트 폴더에서 아래 명령어를 통해 프론트엔드와 백엔드 패키지를 일괄 설치합니다.
+### 2. 프로젝트 설치
 ```bash
-# 전체 의존성 설치 (루트, backend, frontend)
-npm run install:all
+# 모노레포 전역 의존성 설치
+npm install
 ```
 
-### 3. 환경 변수 설정 (.env)
-백엔드 루트(`backend/`)와 프론트엔드 루트(`frontend/`) 경로에 각각 `.env`와 `.env.local` 파일을 직접 생성하여 다음과 같이 환경 변수를 세팅하세요.
-
-- **`backend/.env`**: `DATABASE_URL`, `EXTERNAL_PLAN_API_URL`, `EXTERNAL_PLAN_API_KEY`, `GEMINI_API_KEY` 등이 기입되어야 합니다.
-- **`frontend/.env.local`**: `NEXT_PUBLIC_API_URL=http://localhost:3002/api` (프론트엔드 `api.ts`에서 `/v1`을 자동 결합합니다)
-
-### 4. 데이터베이스 세팅 및 초기 데이터 수집
-서버를 실행하기 전, Prisma를 통한 DB 동기화와 외부 요금제 데이터 스크래핑이 필수입니다.
+### 3. 개발 서버 실행 (Turborepo)
 ```bash
-cd backend
-
-# DB 스키마 동기화 및 Prisma Client 생성
-npx prisma db push
-npx prisma generate
-
-# 우체국 알뜰폰 초기 요금제 데이터 및 크롤러 기반 URL 적재
-npm run telemetry:ingest
-cd ..
-```
-
-### 5. 로컬 서버 실행
-`concurrently`를 통해 프론트엔드(포트: 3001)와 백엔드(포트: 3002) 개발 서버가 동시에 실행됩니다.
-```bash
+# 백엔드(3002) & 프론트엔드(3001) 동시 실행
 npm run dev
 ```
-- Frontend: `http://localhost:3001`
-- Backend: `http://localhost:3002`
+
+### 4. 빌드 및 테스트 (Turborepo)
+```bash
+# 전체 워크스페이스 병렬 빌드
+npm run build
+
+# Vitest 및 Supertest 전체 테스트 실행
+npm run test
+
+# 전역 코드 린팅
+npm run lint
+```
+
+### 5. Docker Compose로 전체 스택 실행
+```bash
+# PostgreSQL DB + 백엔드 + 프론트엔드 자동 구동
+docker compose up --build
+```
 
 ---
 
@@ -103,53 +120,23 @@ npm run dev
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/v1/recommendations` | 사용자 진단(사용량, 통신사) 접수 및 AI 요금제 추천 비동기 요청 (`input_id` 발급) |
-| `GET` | `/api/v1/recommendations/:input_id` | 발급된 `input_id`를 통해 AI 추천 요금제 TOP 3와 분석 사유 결과 조회 |
+| `GET` | `/api/v1/recommendations/:input_id` | 발급된 `input_id`를 통해 AI 추천 요금제 TOP 3 계산 결과 즉시 반환 (<100ms) |
+| `POST` | `/api/v1/recommendations/:input_id/summary` | 요금제 추천 사유에 대한 AI 요약 텍스트 비동기 페칭 |
+| `GET` | `/api/v1/recommendations/:input_id/more` | 차순위 추천 요금제 (4위~) 비동기 페칭 |
 | `GET` | `/api/v1/plans` | 전체 알뜰폰 요금제 DB 및 상세 조회 (망/통신사/가격 필터링) |
 
 ---
 
 ## 🧪 테스트 가이드 (Testing)
 
-Project YOGI는 높은 품질 보증을 위해 Vitest와 Supertest를 결합한 철저한 모의(Mock) 통합 테스트를 수행합니다.
+Project YOGI는 높은 품질 보증을 위해 Vitest와 Supertest를 결합한 철저한 통합 테스트를 수행합니다.
 
-### 백엔드 테스트 (Backend)
 ```bash
-cd backend
-
-# 1. 단위 테스트 및 로직 검증 (Vitest)
+# 전체 모노레포 단위 및 시나리오 테스트 실행
 npm run test
-
-# 2. 커버리지 확인
-npm run test:cov
-
-# 3. Supertest 통합 API 시나리오 검증 (E2E)
-npm run test:e2e
 ```
+
 > **Tip:** 백엔드 테스트는 `antigravity/mocks/` 폴더의 결함 데이터를 활용하여 우체국 알뜰폰 API 호출 실패 시 지수 백오프(Exponential Backoff) 및 자가 치유(Self-healing) 로직이 정상 작동하는지를 포함해 검증합니다.
-
----
-
-## 🛠️ 개발 및 기여 가이드라인
-
-개발에 참여하시거나 코드를 수정하실 때는 다음 폴더 구조와 문서를 참고해 주세요.
-
-```text
-project_yogi/
-├── frontend/                  # Next.js 클라이언트 및 UI 로직
-├── backend/                   # NestJS 서버, AI 파이프라인 및 크롤러
-│   ├── src/telemetry/         # 📌 우체국 데이터 수집 및 크롤링 (npm run telemetry:ingest)
-│   ├── src/recommendations/   # 📌 AI 추천 서비스 로직
-│   └── prisma/                # DB 스키마 및 마이그레이션 파일
-└── antigravity/               # ⚠️ 프로젝트 코어 AI 에이전트 지침 및 프롬프트
-    ├── orchestration_master.md # 프로젝트 마일스톤 및 체크리스트
-    ├── frontend_instructions.md# 프론트엔드 룰셋
-    ├── backend_instructions.md # 백엔드 룰셋
-    ├── harness.yaml           # CI/CD 및 파이프라인 검증 룰셋
-    ├── mocks/                 # 장애 대응 테스트용 모의 데이터
-    └── prompts/               # AI (Gemini) 프롬프트 템플릿 마크다운 파일
-```
-
-> **AI 에이전트 지침**: 코드 베이스 수정 전 반드시 `antigravity/orchestration_master.md`를 읽고 전체 아키텍처 규칙과 렌더링 컨텍스트를 파악해야 합니다.
 
 ---
 

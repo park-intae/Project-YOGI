@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: yogi_postgres
+    environment:
+      POSTGRES_USER: yogi_user
+      POSTGRES_PASSWORD: yogi_password
+      POSTGRES_DB: yogi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yogi_user -d yogi_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: yogi_backend
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://yogi_user:yogi_password@postgres:5432/yogi_db?schema=public
+      PORT: 3002
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    container_name: yogi_frontend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      BACKEND_INTERNAL_URL: http://backend:3002/api
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

@@ -150,16 +150,35 @@
   - [x] 전체 의존성 설치(Hoisting 확인), 병렬 빌드 및 실행 정상 동작 테스트
   - [x] 기존 Vitest 및 Supertest 통과 여부 최종 점검
 
+### [Phase 19] CI/CD 파이프라인 구축 및 자동화 (CI/CD Pipeline & Automation)
+- [x] **GitHub Actions CI 워크플로우 작성 (`.github/workflows/ci.yml`)**
+  - [x] Node.js 및 npm workspaces dependency 캐싱 설정
+  - [x] Turborepo 캐시 및 병렬 명령 연동 (`turbo run lint test build`)
+- [x] **백엔드(NestJS) 및 프론트엔드(Next.js) Docker 멀티 스테이지 이미지 빌드 구성**
+  - [x] `apps/backend/Dockerfile` 경량화 멀티 스테이지 빌드 작성
+  - [x] `apps/frontend/Dockerfile` Standalone 빌드 기반 컨테이너화
+  - [x] `docker-compose.yml`을 통한 로컬/CI 멀티 컨테이너 검증 파이프라인 구성
+- [x] **데이터베이스(Prisma) 마이그레이션 자동화**
+  - [x] CI 파이프라인 내 PostgreSQL 컨테이너/Service 연결 및 Prisma Client 자동 생성
+  - [x] `prisma migrate deploy` 마이그레이션 검증 단계 추가
+- [x] **자동 배포(CD) 파이프라인 및 환경변수(Secrets) 관리 구성**
+  - [x] 브랜치(`main`) 머지 시 배포 파이프라인 연동 (`.github/workflows/cd.yml`)
+  - [x] GitHub Repository Secrets 설정 및 보안 가이드라인 명시
+- [x] **CI/CD 파이프라인 검증 및 헬스 체크 (Health Check)**
+  - [x] PR 생성 및 main 푸시 시 CI 액션 정상 통과 확인
+  - [x] 헬스 체크 엔드포인트 연동 테스트
+
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-07-26T16:33:00+09:00
+- **일시**: 2026-08-03T18:14:00+09:00
 - **완료된 작업**:
-  - Phase 18 모노레포 도입 작업 완벽 종료.
-  - `apps/*` 및 `packages/*` npm workspaces 폴더 구조 개편.
-  - Turborepo 초기 설정(`turbo.json`), 루트 스크립트 수정 및 빌드/테스트 캐싱 점검 통과.
-  - 공통 패키지(`shared-types`)에 DTO 이관 완료 및 프론트/백엔드 연동 확인.
-  - 공통 설정(`typescript-config`, `eslint-config`) 분리 및 각 앱(App)에 적용 완료.
+  - Phase 19 (CI/CD 파이프라인 구축 및 자동화) 성공적으로 구축 및 검증 완료.
+  - `.github/workflows/ci.yml` (Monorepo Node.js + Postgres Service + Turborepo lint/test/build) 워크플로우 구축.
+  - `.github/workflows/cd.yml` (GitHub Container Registry Docker 이미지 자동 빌드 및 푸시) 워크플로우 구축.
+  - `apps/backend/Dockerfile` & `apps/frontend/Dockerfile` 경량 멀티 스테이지 빌드 및 Next.js standalone 모드 설정.
+  - `docker-compose.yml`을 활용한 PostgreSQL + 백엔드 + 프론트엔드 통합 오케스트레이션 구성.
+  - Turborepo 빌드 (`npm run build`) 통과 완료.
 - **중단점 및 다음 작업 (Next Steps)**:
-  - 모노레포 인프라 구축(Phase 18) 완료. 다음 계획 수립 및 개발 마일스톤에 따른 신규 기능(Phase 19~) 진행 대기 중.
+  - Phase 19 완료. 다음 마일스톤 (운영 배포 및 모니터링 고도화 Phase 20) 진입 대기.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.
