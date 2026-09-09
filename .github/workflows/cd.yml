@@ -10,6 +10,9 @@ jobs:
   deploy:
     name: Build & Deploy Container Images
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs: []
 
     steps:
