@@ -291,19 +291,94 @@ describe('TelemetryService', () => {
       expect(result.status).toBe('SUCCESS');
     });
 
-    it('should parse allowances containing string characters', async () => {
-      const resultBase = (service as any).parseBaseFee('69,000원');
-      expect(resultBase).toBe(69000);
+    it('should parse allowances containing string characters and edge cases', async () => {
+      const s = service as any;
+      expect(s.parseBaseFee('69,000원')).toBe(69000);
+      expect(s.parseBaseFee('무료')).toBe(0);
+      expect(s.parseBaseFee(null)).toBe(0);
 
-      const resultData = (service as any).parseDataAllowance(
-        '매일5GB+소진시5Mbps',
-      );
-      expect(resultData).toBe(5);
+      expect(s.parseDataAllowance('매일5GB+소진시5Mbps')).toBe(5);
+      expect(s.parseDataAllowance('무제한')).toBe(9999);
+      expect(s.parseDataAllowance('15')).toBe(15);
+      expect(s.parseDataAllowance('없음')).toBe(0);
+      expect(s.parseDataAllowance(null)).toBe(0);
 
-      const resultVoice = (service as any).parseVoiceAllowance(
-        '집/이동전화 무제한(영상/부가300분)',
+      expect(s.parseVoiceAllowance('집/이동전화 무제한(영상/부가300분)')).toBe(
+        9999,
       );
-      expect(resultVoice).toBe(9999);
+      expect(s.parseVoiceAllowance('200분')).toBe(200);
+      expect(s.parseVoiceAllowance('120')).toBe(120);
+      expect(s.parseVoiceAllowance('없음')).toBe(0);
+      expect(s.parseVoiceAllowance(null)).toBe(0);
+    });
+
+    it('should parse valid XML response from external API with ServiceKey', async () => {
+      process.env.EXTERNAL_PLAN_API_URL = 'http://test.com/api';
+      process.env.EXTERNAL_PLAN_API_KEY = 'secret-key';
+
+      const validXml = `
+        <AlddlChargeResponse>
+          <cmmMsgHeader><successYN>Y</successYN></cmmMsgHeader>
+          <alddlCharge>
+            <mvncomNm>우체국</mvncomNm>
+            <telecomName>KT망</telecomName>
+            <chargeName>알뜰 10GB</chargeName>
+            <telecomGenerationType>LTE</telecomGenerationType>
+            <chargeAmount>15000</chargeAmount>
+            <dataAmount>10GB</dataAmount>
+            <voiceAmount>100분</voiceAmount>
+          </alddlCharge>
+        </AlddlChargeResponse>
+      `;
+      mockHttpService.get.mockReturnValueOnce(
+        of({ data: validXml, status: 200 }),
+      );
+
+      const res = await service.fetchData('ANY');
+      expect(res.status).toBe('SUCCESS');
+      expect(res.response_data.total_count).toBe(1);
+
+      delete process.env.EXTERNAL_PLAN_API_URL;
+      delete process.env.EXTERNAL_PLAN_API_KEY;
+    });
+
+    it('should handle mock file missing, case missing, and ERROR status case', async () => {
+      delete process.env.EXTERNAL_PLAN_API_URL;
+
+      vi.mocked(fs.existsSync).mockReturnValueOnce(false);
+      await expect(service.fetchData('MOCK_CASE_01_SUCCESS')).rejects.toThrow(
+        'Mock file not found',
+      );
+
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({
+          mocks: [
+            {
+              case_id: 'ERR_CASE',
+              status: 'ERROR',
+              http_status: 503,
+              response_data: { message: 'Down' },
+            },
+          ],
+        }),
+      );
+
+      await expect(service.fetchData('UNKNOWN_CASE')).rejects.toThrow(
+        'Mock case not found',
+      );
+      await expect(service.fetchData('ERR_CASE')).rejects.toThrow(
+        'API_ERROR: Down',
+      );
+    });
+
+    it('should continue transform loop when a single plan has malformed JSON', async () => {
+      mockPrismaService.plan.findMany.mockResolvedValueOnce([
+        { id: 99, rawPlanDescription: '{invalid_json' },
+      ]);
+      const res = await service.transform();
+      expect(res.success).toBe(true);
+      expect(res.count).toBe(0);
     });
   });
 });
