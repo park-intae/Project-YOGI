@@ -84,6 +84,24 @@ export class DemandConditionDto implements IDemandConditionDto {
   @IsOptional()
   @IsInt()
   max_budget?: number;
+
+  @ApiProperty({
+    required: false,
+    example: 15,
+    description: '최소 희망 데이터 제공량 (GB, 무제한은 -1 또는 9999)',
+  })
+  @IsOptional()
+  @IsNumber()
+  min_data_gb?: number;
+
+  @ApiProperty({
+    required: false,
+    example: 200,
+    description: '최소 희망 음성통화 제공량 (분, 무제한은 -1 또는 9999)',
+  })
+  @IsOptional()
+  @IsInt()
+  min_voice_min?: number;
 }
 
 export class CreateSessionDto implements ICreateSessionDto {

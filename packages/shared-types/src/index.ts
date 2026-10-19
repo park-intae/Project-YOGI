@@ -12,6 +12,8 @@ export interface DemandConditionDto {
   preferred_base_network?: string;
   preferred_network_type?: string;
   max_budget?: number;
+  min_data_gb?: number;
+  min_voice_min?: number;
 }
 
 export interface CreateSessionDto {

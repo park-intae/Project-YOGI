@@ -79,6 +79,8 @@ export class RecommendationsService {
             preferredBaseNetwork: dto.demand_condition.preferred_base_network,
             preferredNetworkType: dto.demand_condition.preferred_network_type,
             maxFee: dto.demand_condition.max_budget,
+            minDataGb: dto.demand_condition.min_data_gb,
+            minVoiceMin: dto.demand_condition.min_voice_min,
           },
         });
       }
@@ -93,7 +95,104 @@ export class RecommendationsService {
     });
   }
 
-  private async getCandidatePlans(demand: any, limit = 15) {
+  /**
+   * 데이터 제공량(GB)을 스코어링 연산용 수치로 정규화합니다.
+   * 무제한(-1 또는 999 이상)은 150GB 상한선으로 정규화하며, 결측치/음수는 0으로 방어합니다.
+   */
+  private normalizeDataGb(val: any): number {
+    if (val === undefined || val === null) return 0;
+    const num = Number(val);
+    if (isNaN(num)) return 0;
+    if (num === -1 || num >= 999) return 150;
+    return Math.max(0, num);
+  }
+
+  /**
+   * 음성 통화 제공량(분)을 스코어링 연산용 수치로 정규화합니다.
+   * 무제한(-1 또는 999 이상)은 1000분 상한선으로 정규화하며, 결측치/음수는 0으로 방어합니다.
+   */
+  private normalizeVoiceMin(val: any): number {
+    if (val === undefined || val === null) return 0;
+    const num = Number(val);
+    if (isNaN(num)) return 0;
+    if (num === -1 || num >= 999) return 1000;
+    return Math.max(0, num);
+  }
+
+  /**
+   * 가중치 기반 다차원 정량 스코어링 엔진 (100점 만점)
+   * - 1) 요금 절감 및 예산 효율 (Price & Savings Score): 가중치 45% (최대 45점)
+   * - 2) 데이터 제공량 충족도 (Data Fit Score): 가중치 40% (최대 40점)
+   * - 3) 음성 통화량 충족도 (Voice Fit Score): 가중치 15% (최대 15점)
+   */
+  public calculatePlanScore(plan: any, userPlan?: any, demand?: any): number {
+    // 1. 요금 절감 및 예산 효율 점수 (최대 45점)
+    const planFee = Math.max(0, Number(plan?.baseFee) || 0);
+    const userFee = Math.max(0, Number(userPlan?.baseFee) || 0);
+    const maxBudget = Math.max(0, Number(demand?.maxFee) || 0);
+
+    const referenceFee =
+      userFee > 0 ? userFee : maxBudget > 0 ? maxBudget : 50000;
+
+    let priceScore = 0;
+    if (planFee <= referenceFee) {
+      const savingsRatio = (referenceFee - planFee) / referenceFee;
+      priceScore = 20 + Math.min(1, savingsRatio) * 25;
+    } else {
+      const overRatio = (planFee - referenceFee) / referenceFee;
+      priceScore = Math.max(0, 15 * (1 - overRatio));
+    }
+
+    // 2. 데이터 제공량 충족도 점수 (최대 40점)
+    const targetDataGb = Math.max(
+      this.normalizeDataGb(userPlan?.dataAllowanceGb),
+      this.normalizeDataGb(demand?.minDataGb),
+    );
+    const planDataGb = this.normalizeDataGb(plan?.dataAllowanceGb);
+
+    let dataScore = 0;
+    if (targetDataGb > 0) {
+      if (planDataGb >= targetDataGb) {
+        const bonusRatio = Math.min(
+          1,
+          (planDataGb - targetDataGb) / Math.max(targetDataGb, 10),
+        );
+        dataScore = 32 + bonusRatio * 8;
+      } else {
+        const fitRatio = planDataGb / targetDataGb;
+        dataScore = Math.pow(fitRatio, 1.5) * 25;
+      }
+    } else {
+      dataScore = Math.min(1, planDataGb / 50) * 40;
+    }
+
+    // 3. 음성 통화량 충족도 점수 (최대 15점)
+    const targetVoiceMin = Math.max(
+      this.normalizeVoiceMin(userPlan?.voiceAllowanceMin),
+      this.normalizeVoiceMin(demand?.minVoiceMin),
+    );
+    const planVoiceMin = this.normalizeVoiceMin(plan?.voiceAllowanceMin);
+
+    let voiceScore = 0;
+    if (targetVoiceMin > 0) {
+      if (planVoiceMin >= targetVoiceMin) {
+        const bonusRatio = Math.min(
+          1,
+          (planVoiceMin - targetVoiceMin) / Math.max(targetVoiceMin, 100),
+        );
+        voiceScore = 12 + bonusRatio * 3;
+      } else {
+        const fitRatio = planVoiceMin / targetVoiceMin;
+        voiceScore = fitRatio * 10;
+      }
+    } else {
+      voiceScore = Math.min(1, planVoiceMin / 300) * 15;
+    }
+
+    return Number((priceScore + dataScore + voiceScore).toFixed(2));
+  }
+
+  private async getCandidatePlans(demand: any, limit = 15, userPlan?: any) {
     const where: any = { baseFee: { gt: 0 } };
 
     if (demand?.maxFee)
@@ -104,10 +203,9 @@ export class RecommendationsService {
     if (demand?.preferredNetworkType)
       where.networkType = demand.preferredNetworkType;
 
-    return this.prisma.plan.findMany({
+    const candidates = await this.prisma.plan.findMany({
       where,
       orderBy: { baseFee: 'asc' },
-      take: limit,
       select: {
         id: true,
         carrier: true,
@@ -119,6 +217,25 @@ export class RecommendationsService {
         planUrl: true,
       },
     });
+
+    if (!candidates || candidates.length === 0) {
+      return [];
+    }
+
+    const scoredCandidates = candidates
+      .map((plan) => ({
+        plan,
+        score: this.calculatePlanScore(plan, userPlan, demand),
+      }))
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return (Number(a.plan?.baseFee) || 0) - (Number(b.plan?.baseFee) || 0);
+      })
+      .map((item) => item.plan);
+
+    return scoredCandidates.slice(0, limit);
   }
 
   async getRecommendationsData(
@@ -144,7 +261,11 @@ export class RecommendationsService {
       throw new ForbiddenException('Forbidden. Session ID mismatch.');
     }
 
-    const candidatePlans = await this.getCandidatePlans(session.userDemand, 3);
+    const candidatePlans = await this.getCandidatePlans(
+      session.userDemand,
+      3,
+      session.userPlan,
+    );
     const userBaseFee = session.userPlan?.baseFee || 0;
 
     const recommendedPlans = candidatePlans.map((cp, idx) => {
@@ -194,7 +315,11 @@ export class RecommendationsService {
       throw new ForbiddenException('Forbidden. Session ID mismatch.');
     }
 
-    let candidatePlans = await this.getCandidatePlans(session.userDemand, 15);
+    let candidatePlans = await this.getCandidatePlans(
+      session.userDemand,
+      15,
+      session.userPlan,
+    );
 
     if (excludedIds && excludedIds.length > 0) {
       candidatePlans = candidatePlans.filter(
@@ -260,7 +385,11 @@ export class RecommendationsService {
       throw new ForbiddenException('Forbidden. Session ID mismatch.');
     }
 
-    const candidatePlans = await this.getCandidatePlans(session.userDemand, 3);
+    const candidatePlans = await this.getCandidatePlans(
+      session.userDemand,
+      3,
+      session.userPlan,
+    );
 
     if (isDevMode || !this.genAI || process.env.NODE_ENV === 'test') {
       this.logger.warn(

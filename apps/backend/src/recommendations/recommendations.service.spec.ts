@@ -208,4 +208,152 @@ describe('RecommendationsService', () => {
       process.env.NODE_ENV = originalEnv;
     });
   });
+
+  describe('calculatePlanScore & Weighted Multi-Factor Ranking', () => {
+    it('should rank a data-sufficient plan higher than an ultra-cheap data-starved plan for a heavy data user', async () => {
+      prisma.inputSession.findUnique = vi.fn().mockResolvedValue({
+        id: 'input-heavy',
+        sessionId: 'session-123',
+        userPlan: {
+          baseFee: 69000,
+          dataAllowanceGb: 50,
+          voiceAllowanceMin: 300,
+        },
+        userDemand: {
+          maxFee: 45000,
+        },
+      });
+
+      // DB에서 기본료 오름차순으로 반환된 후보군 (1GB 초저가 vs 50GB 적정가 vs 50GB 고가)
+      prisma.plan.findMany = vi.fn().mockResolvedValue([
+        {
+          id: 1,
+          carrier: '알뜰A',
+          baseNetwork: 'KT망',
+          planName: '초저가 1GB',
+          baseFee: 3000,
+          dataAllowanceGb: 1,
+          voiceAllowanceMin: 100,
+        },
+        {
+          id: 2,
+          carrier: '알뜰B',
+          baseNetwork: 'KT망',
+          planName: '데이터 50GB 안심',
+          baseFee: 25000,
+          dataAllowanceGb: 50,
+          voiceAllowanceMin: 9999,
+        },
+        {
+          id: 3,
+          carrier: '알뜰C',
+          baseNetwork: 'KT망',
+          planName: '프리미엄 50GB',
+          baseFee: 44000,
+          dataAllowanceGb: 50,
+          voiceAllowanceMin: 9999,
+        },
+      ]);
+
+      const result = await service.getRecommendationsData(
+        'input-heavy',
+        'session-123',
+      );
+
+      expect(result.recommended_plans).toHaveLength(3);
+      // 단순 최저가(3,000원, 1GB)가 아닌 데이터 50GB 충족 + 가성비 요금제(id: 2)가 1위여야 함
+      expect(result.recommended_plans[0].plan_id).toBe('2');
+      expect(result.recommended_plans[1].plan_id).toBe('3');
+      expect(result.recommended_plans[2].plan_id).toBe('1');
+    });
+
+    it('Edge Case 1: should normalize unlimited values (-1 and 9999) properly without overflowing', () => {
+      const userPlan = {
+        baseFee: 65000,
+        dataAllowanceGb: -1, // 무제한(-1)
+        voiceAllowanceMin: -1, // 무제한(-1)
+      };
+      const unlimitedPlan = {
+        baseFee: 33000,
+        dataAllowanceGb: 9999, // 무제한(9999)
+        voiceAllowanceMin: 9999,
+      };
+      const limitedPlan = {
+        baseFee: 33000,
+        dataAllowanceGb: 10,
+        voiceAllowanceMin: 100,
+      };
+
+      const unlimitedScore = service.calculatePlanScore(
+        unlimitedPlan,
+        userPlan,
+      );
+      const limitedScore = service.calculatePlanScore(limitedPlan, userPlan);
+
+      expect(unlimitedScore).toBeGreaterThan(limitedScore);
+      expect(unlimitedScore).toBeLessThanOrEqual(100);
+    });
+
+    it('Edge Case 2: should safely handle null, undefined, or malformed string fields without NaN', () => {
+      const brokenPlan = {
+        id: 99,
+        baseFee: null,
+        dataAllowanceGb: 'invalid_number',
+        voiceAllowanceMin: undefined,
+      };
+      const brokenUserPlan = {
+        baseFee: undefined,
+        dataAllowanceGb: null,
+        voiceAllowanceMin: 'NaN',
+      };
+
+      const score = service.calculatePlanScore(
+        brokenPlan,
+        brokenUserPlan,
+        null,
+      );
+      expect(Number.isNaN(score)).toBe(false);
+      expect(score).toBeGreaterThanOrEqual(0);
+      expect(score).toBeLessThanOrEqual(100);
+    });
+
+    it('Edge Case 3: should work with DEMAND-only session and break score ties by lower baseFee', async () => {
+      prisma.inputSession.findUnique = vi.fn().mockResolvedValue({
+        id: 'input-demand-only',
+        sessionId: 'session-123',
+        userPlan: null,
+        userDemand: {
+          maxFee: 30000,
+          minDataGb: 15,
+          minVoiceMin: 200,
+        },
+      });
+
+      prisma.plan.findMany = vi.fn().mockResolvedValue([
+        {
+          id: 10,
+          carrier: '알뜰X',
+          planName: '요금제X',
+          baseFee: 15000,
+          dataAllowanceGb: 15,
+          voiceAllowanceMin: 200,
+        },
+        {
+          id: 11,
+          carrier: '알뜰Y',
+          planName: '요금제Y',
+          baseFee: 20000,
+          dataAllowanceGb: 15,
+          voiceAllowanceMin: 200,
+        },
+      ]);
+
+      const result = await service.getRecommendationsData(
+        'input-demand-only',
+        'session-123',
+      );
+      expect(result.recommended_plans[0].plan_id).toBe('10');
+      expect(result.recommended_plans[1].plan_id).toBe('11');
+    });
+  });
 });

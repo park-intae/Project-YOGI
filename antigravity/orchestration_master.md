@@ -168,17 +168,21 @@
   - [x] PR 생성 및 main 푸시 시 CI 액션 정상 통과 확인
   - [x] 헬스 체크 엔드포인트 연동 테스트
 
+### [Phase 20] 가중치 기반 다차원 정량 스코어링 엔진 (Weighted Scoring Engine) 고도화
+- [x] `DemandConditionDto` 및 `@yogi/shared-types`에 최소 데이터(`min_data_gb`)·최소 통화량(`min_voice_min`) 선택 필드 매핑 보강
+- [x] `RecommendationsService` 내 단순 최저가 정렬(`baseFee ASC`)을 대체하는 가중치 기반 다차원 정량 스코어링(`calculatePlanScore`) 구현 (요금 절감 효율 45% + 데이터 충족도 40% + 음성 통화 충족도 15%)
+- [x] Track 1(`getRecommendationsData`, `getMoreRecommendationsData`) 및 Track 2(`getRecommendationSummary`) 후보군 추출에 다형성 세션(`userPlan` + `userDemand`) 기반 스코어링 연동
+- [x] 엣지 케이스(무제한 `-1`/`9999`, 결측치 `null`/`undefined`, 데이터 미달 페널티 등)를 포함한 Vitest 단위 테스트 및 Supertest E2E 검증 (10개 테스트 파일, 51개 테스트 전원 PASS)
+
 ## 2. 🚦 현재 작업 세션 로그 및 중단 점 (Handover Note)
-- **일시**: 2026-08-03T18:14:00+09:00
+- **일시**: 2026-10-19T18:19:00+09:00
 - **완료된 작업**:
-  - Phase 19 (CI/CD 파이프라인 구축 및 자동화) 성공적으로 구축 및 검증 완료.
-  - `.github/workflows/ci.yml` (Monorepo Node.js + Postgres Service + Turborepo lint/test/build) 워크플로우 구축.
-  - `.github/workflows/cd.yml` (GitHub Container Registry Docker 이미지 자동 빌드 및 푸시) 워크플로우 구축.
-  - `apps/backend/Dockerfile` & `apps/frontend/Dockerfile` 경량 멀티 스테이지 빌드 및 Next.js standalone 모드 설정.
-  - `docker-compose.yml`을 활용한 PostgreSQL + 백엔드 + 프론트엔드 통합 오케스트레이션 구성.
-  - Turborepo 빌드 (`npm run build`) 통과 완료.
+  - Phase 20 (가중치 기반 다차원 정량 스코어링 엔진 고도화) 백엔드 구현 및 검증 완료.
+  - `RecommendationsService.calculatePlanScore()` 도입: 요금 절감 효율(45점) + 데이터 제공량 충족도(40점) + 음성 통화량 충족도(15점) 가중치 수식 적용 및 데이터 미달 초저가 요금제 페널티(`fitRatio^1.5`) 부여.
+  - 무제한 수치(`-1`, `9999`) 정규화(`normalizeDataGb`, `normalizeVoiceMin`) 및 결측치 방어 로직 구현.
+  - `recommendations.service.spec.ts`에 가중치 랭킹 및 엣지 케이스 단위 테스트 4종 추가, E2E 테스트(`app.e2e-spec.ts`, `sessions.e2e-spec.ts`) DB 격리 Mocking 보강으로 전체 10개 스위트(51개 테스트) 100% PASS 달성.
 - **중단점 및 다음 작업 (Next Steps)**:
-  - Phase 19 완료. 다음 마일스톤 (운영 배포 및 모니터링 고도화 Phase 20) 진입 대기.
+  - Phase 20 백엔드 구현 완료. 노션 포트폴리오 아키텍처/시퀀스 다이어그램 및 본문에 가중치 기반 정량 스코어링 엔진 내용 동기화 대기.
 
 ## 🧪 3. 깐깐한 QA 에이전트(QA/Test) 검증 프로토콜
 > AI는 구현 코드를 작성한 후, 스스로를 '시니어 QA 엔지니어' 모드로 전환하여 아래의 테스트 지침을 100% 통과시켜야 합니다.

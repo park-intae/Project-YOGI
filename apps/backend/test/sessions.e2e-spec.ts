@@ -3,6 +3,71 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
+import { vi } from 'vitest';
+
+const sessionStore = new Map<string, any>();
+
+const mockPrismaService = {
+  onModuleInit: vi.fn(),
+  $transaction: vi.fn().mockImplementation(async (cb) => {
+    const tx = {
+      inputSession: {
+        create: vi.fn().mockImplementation(async ({ data }) => {
+          const id = '22222222-2222-4222-8222-222222222222';
+          const record: any = {
+            id,
+            sessionId: data.sessionId,
+            userPlan: null,
+            userDemand: null,
+          };
+          sessionStore.set(id, record);
+          return record;
+        }),
+        findUnique: vi.fn().mockImplementation(async ({ where }) => {
+          return sessionStore.get(where.id) || null;
+        }),
+      },
+      userPlan: {
+        create: vi.fn().mockImplementation(async ({ data }) => {
+          const rec = sessionStore.get(data.inputId);
+          if (rec) rec.userPlan = data;
+          return data;
+        }),
+      },
+      userDemand: {
+        create: vi.fn().mockImplementation(async ({ data }) => {
+          const rec = sessionStore.get(data.inputId);
+          if (rec) rec.userDemand = data;
+          return data;
+        }),
+      },
+    };
+    return cb(tx);
+  }),
+  inputSession: {
+    findUnique: vi.fn().mockImplementation(async ({ where }) => {
+      return sessionStore.get(where.id) || null;
+    }),
+    deleteMany: vi.fn().mockImplementation(async () => {
+      sessionStore.clear();
+      return { count: 0 };
+    }),
+  },
+  plan: {
+    findMany: vi.fn().mockResolvedValue([
+      {
+        id: 1,
+        carrier: '우체국알뜰',
+        baseNetwork: 'KT망',
+        planName: '알뜰 5G 50GB',
+        baseFee: 25000,
+        dataAllowanceGb: 50,
+        voiceAllowanceMin: 9999,
+        planUrl: 'https://example.com/plan/1',
+      },
+    ]),
+  },
+};
 
 describe('RecommendationsController (e2e)', () => {
   let app: INestApplication;
@@ -11,7 +76,10 @@ describe('RecommendationsController (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue(mockPrismaService)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -23,7 +91,6 @@ describe('RecommendationsController (e2e)', () => {
   });
 
   afterAll(async () => {
-    // Clean up created session
     if (prisma) {
       try {
         await prisma.inputSession.deleteMany({});

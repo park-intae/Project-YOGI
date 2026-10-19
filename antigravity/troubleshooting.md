@@ -81,3 +81,15 @@
 - **해결 방안**: 
   - 단위 테스트(`RecommendationList.spec.tsx`) 작성 과정에서 해당 엣지 케이스를 테스트하던 중 발견함.
   - 필터링 로직을 수정하여, KT망 필터 선택 시 `baseNetwork.includes('KT') && !baseNetwork.includes('SKT')`와 같이 명시적으로 SKT가 포함된 경우를 배제하도록 조건을 엄격하게 개선하여 이슈 완벽 해결.
+
+## 13. 단순 최저가 정렬(`baseFee ASC`)로 인한 고용량 데이터 사용자 추천 왜곡 문제
+- **문제 발생**: Track 1(`getRecommendationsData`)에서 예산(`maxFee`) 이하 후보 요금제를 단순 기본료 오름차순(`orderBy: { baseFee: 'asc' }`)으로 상위 3개만 추출하다 보니, 월 50GB 이상 데이터를 사용하는 유저에게도 월 2,000~3,000원짜리 초저가 소량 데이터(500MB~1GB) 요금제가 1순위로 추천되는 도메인 정합성 문제 발견.
+- **원인**: `UserPlan`에 저장된 기존 데이터 사용량(`dataAllowanceGb`) 및 통화량(`voiceAllowanceMin`)이 후보 요금제 랭킹 산정에 반영되지 않고 DB 정렬에만 의존함.
+- **해결 방안**:
+  - `RecommendationsService`에 **가중치 기반 다차원 정량 스코어링 엔진(`calculatePlanScore`)**을 도입하여 **요금 절감 효율(45%) + 데이터 제공량 충족도(40%) + 음성 통화량 충족도(15%)** 총점(100점 만점) 기반으로 후보군을 랭킹화함.
+  - 특히 기존 데이터 사용량 대비 후보 요금제의 데이터가 부족할 경우 비선형 페널티(`(planData / targetData)^1.5`)를 부여하고, 무제한 값(`-1`, `9999`)은 상한선(150GB, 1000분)으로 정규화하여 `< 100ms` 응답 속도를 유지하면서도 사용자 사용 패턴에 부합하는 최적의 Top 3 요금제를 도출하도록 개선함.
+
+## 14. 로컬 DB 미구동 환경에서의 E2E 테스트(`app.e2e-spec.ts`, `sessions.e2e-spec.ts`) 연결 실패
+- **문제 발생**: 로컬 PostgreSQL(`localhost:5432`)이 꺼져 있는 격리 환경에서 `npm run test` 실행 시 `app.e2e-spec.ts`와 `sessions.e2e-spec.ts`에서 `PrismaClientInitializationError` 발생.
+- **원인**: `recommendations.e2e-spec.ts`는 `.overrideProvider(PrismaService)`로 DB 격리 Mocking이 적용되어 있었으나, 초기 작성된 두 E2E 파일에는 `PrismaService` 오버라이드가 누락되어 `onModuleInit()` 시 실제 DB 연결을 시도함.
+- **해결 방안**: `backend_instructions.md` 4번(네트워크/인프라 격리 테스트 규칙)에 의거하여 `app.e2e-spec.ts` 및 `sessions.e2e-spec.ts`에도 인메모리 `PrismaService` Mocking을 적용, 외부 DB 의존성 없이 전체 10개 테스트 파일(51개 테스트)이 100% 통과하도록 개선함.
