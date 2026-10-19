@@ -21,18 +21,19 @@
 
 - **비회원 기반 극도의 심리스 UX (Seamless UX)**: 대시보드나 복잡한 회원가입 없이, 접속 즉시 폼을 입력하고 추천 결과를 확인하는 단일 페이지(Single-Flow) 레이아웃.
 - **알뜰폰 전용 정밀 큐레이션 (Pivot)**: MNO 통신 3사 의존성을 제거하고, 알뜰폰 요금제와 망(Network) 기반으로 사용자의 최적 절약 금액 및 맞춤 추천을 계산.
-- **투트랙(Two-Track) AI 추천 아키텍처**: 요금제 데이터 계산 응답(<100ms)과 AI 요약 코멘트를 분리하여 빠른 사용자 경험 제공.
+- **투트랙(Two-Track) 하이브리드 추천 아키텍처**: 가중치 기반 다차원 정량 스코어링 응답(<100ms)과 Gemini AI 맞춤 추천 사유 생성(/summary)을 병렬 분리하여 추천 정확도와 초기 렌더링 속도 동시 확보.
 - **Data-centric 파이프라인**: 우체국 알뜰폰 스크래퍼 및 API 데이터를 가공하여 DB에 적재하며, AI 프롬프트를 데이터로 격리(Markdown)하여 런타임 안정성 증대.
 - **모노레포 및 CI/CD 자동화**: npm Workspaces + Turborepo 기반 아키텍처와 Docker 멀티 스테이지 빌드, GitHub Actions 파이프라인 구성.
 
 ---
 
-## 🌟 주요 업그레이드 내역 (Phases 16~19)
+## 🌟 주요 업그레이드 내역 (Phases 16~20)
 
-- **Phase 16 - 비동기 추가 추천 (Load More)**: 상위 3개 요금제 외 차순위 요금제 추가 추천을 위한 비동기 전용 AI 프롬프트(`recommendation_more_v1.md`) 구축.
-- **Phase 17 - 투트랙(Two-Track) AI 속도 혁신**: 요금제 데이터 즉시 반환(<100ms) 후 AI 요약 코멘트를 비동기(`.../summary`)로 페칭하는 투트랙 UX 도입.
+- **Phase 16 - 비동기 추가 추천 (Load More)**: 상위 3개 요금제 외 차순위 요금제 추가 추천을 위한 비동기 페이징(`/more`) 구축.
+- **Phase 17 - 투트랙(Two-Track) AI 속도 혁신**: 요금제 정량 데이터 즉시 반환(<100ms) 후 AI 요약 코멘트를 비동기(`.../summary`)로 병렬 페칭하는 투트랙 UX 도입.
 - **Phase 18 - Turborepo 모노레포 도입**: `apps/frontend`, `apps/backend`, `packages/shared-types` 구조로 전면 재구성하고 Turborepo 캐시 및 빌드 파이프라인 구축.
 - **Phase 19 - CI/CD 파이프라인 & Docker 자동화**: GitHub Actions CI (`ci.yml`), CD (`cd.yml`), 멀티 스테이지 Dockerfile 및 `docker-compose.yml` 오케스트레이션 구성.
+- **Phase 20 - 가중치 기반 다차원 정량 스코어링 고도화 & 테스트 커버리지 관리**: 단순 최저가 정렬(`baseFee ASC`)을 대체하는 가중치 스코어링 엔진(**요금 절감 효율 45% + 데이터 충족도 40% + 음성 통화 충족도 15%**) 도입 및 풀스택 테스트 커버리지(종합 92.1% / 89개 테스트) 달성.
 
 ---
 
@@ -119,24 +120,33 @@ docker compose up --build
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/v1/recommendations` | 사용자 진단(사용량, 통신사) 접수 및 AI 요금제 추천 비동기 요청 (`input_id` 발급) |
-| `GET` | `/api/v1/recommendations/:input_id` | 발급된 `input_id`를 통해 AI 추천 요금제 TOP 3 계산 결과 즉시 반환 (<100ms) |
-| `POST` | `/api/v1/recommendations/:input_id/summary` | 요금제 추천 사유에 대한 AI 요약 텍스트 비동기 페칭 |
-| `GET` | `/api/v1/recommendations/:input_id/more` | 차순위 추천 요금제 (4위~) 비동기 페칭 |
-| `GET` | `/api/v1/plans` | 전체 알뜰폰 요금제 DB 및 상세 조회 (망/통신사/가격 필터링) |
+| `POST` | `/api/v1/recommendations` | 사용자 진단(현재 요금제·사용량, 희망 조건) 접수 및 다형성 세션 생성 (`input_id` 발급) |
+| `GET` | `/api/v1/recommendations/:input_id` | **[Track 1]** 가중치 기반 다차원 정량 스코어링(요금 45%·데이터 40%·통화 15%)을 통한 최적 TOP 3 요금제 및 예상 절감액 즉시 반환 (<100ms) |
+| `GET` | `/api/v1/recommendations/:input_id/summary` | **[Track 2]** 선정된 TOP 3 요금제에 대한 Gemini AI 개인화 추천 사유 비동기 페칭 |
+| `GET` | `/api/v1/recommendations/:input_id/more` | 기존 추천 요금제(`excluded_ids`)를 제외한 차순위 스코어링 요금제(4위~8위) 비동기 페칭 |
 
 ---
 
-## 🧪 테스트 가이드 (Testing)
+## 🧪 테스트 및 커버리지 관리 (Testing & Coverage)
 
-Project YOGI는 높은 품질 보증을 위해 Vitest와 Supertest를 결합한 철저한 통합 테스트를 수행합니다.
+Project YOGI는 높은 품질 보증을 위해 **Vitest**, **React Testing Library**, **Supertest**를 결합한 풀스택 자동화 테스트와 **v8 기반 테스트 커버리지 관리**를 수행합니다. 불필요한 보일러플레이트(`*.module.ts`, `main.ts` 등)를 측정 모수에서 분리하고, 핵심 비즈니스 로직과 엣지 케이스(무제한 값 정규화, 결측치 방어, 외부 API 장애 복원력 등)를 집중 검증합니다.
+
+| 영역 | Test Suites / Tests | % Stmts | % Branch | % Funcs | % Lines |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Backend (`apps/backend`)** | 10 passed / **56 passed** | **96.73%** | **85.96%** | **98.14%** | **97.08%** |
+| **Frontend (`apps/frontend`)** | 8 passed / **33 passed** | **87.38%** | **71.80%** | **78.33%** | **89.63%** |
+| **종합 평균** | **18 passed / 89 passed** | **92.06%** | **78.88%** | **88.24%** | **93.36%** |
 
 ```bash
 # 전체 모노레포 단위 및 시나리오 테스트 실행
 npm run test
+
+# 백엔드 / 프론트엔드 v8 테스트 커버리지 리포트 확인
+cd apps/backend && npm run test:cov
+cd apps/frontend && npx vitest run --coverage
 ```
 
-> **Tip:** 백엔드 테스트는 `antigravity/mocks/` 폴더의 결함 데이터를 활용하여 우체국 알뜰폰 API 호출 실패 시 지수 백오프(Exponential Backoff) 및 자가 치유(Self-healing) 로직이 정상 작동하는지를 포함해 검증합니다.
+> **Tip:** 백엔드 테스트는 `antigravity/mocks/` 폴더의 결함 데이터를 활용하여 우체국 알뜰폰 API 호출 실패 시 지수 백오프(Exponential Backoff) 및 자가 치유(Self-healing) 로직, 그리고 DB 격리 E2E 시나리오가 정상 작동하는지를 포함해 검증합니다.
 
 ---
 
@@ -172,4 +182,10 @@ npm run test
 <summary><b>5. CSS Grid 요소 호버 시 테두리 잘림 현상</b></summary>
 - <b>문제</b>: 요금제 카드 호버 확대 시(`scale-[1.02]`), 부모 요소의 `overflow-hidden` 때문에 가장자리가 칼로 자른 듯 잘림.<br/>
 - <b>해결</b>: 바깥쪽 레이아웃 패딩(`px-4`)을 안쪽 컨테이너로 이동하여 카드 팽창을 위한 '안전 구역(Safe Zone)'을 확보하고 상하 패딩과 `z-index`를 보강하여 완벽 해결.
+</details>
+
+<details>
+<summary><b>6. 단순 최저가 정렬(baseFee ASC)로 인한 고용량 데이터 사용자 추천 왜곡 해결</b></summary>
+- <b>문제</b>: 후보 요금제를 단순 기본료 오름차순으로만 정렬하여 월 50GB 이상 사용하는 헤비 유저에게도 월 2,000~3,000원짜리 소량 데이터(1GB) 요금제가 1순위로 추천되는 도메인 정합성 한계 발견.<br/>
+- <b>해결</b>: 요금 절감 효율(45%) + 데이터 제공량 충족도(40%) + 음성 통화량 충족도(15%)를 종합 평가하는 가중치 기반 다차원 정량 스코어링 엔진(`calculatePlanScore`)을 구현하고, 데이터 미달 후보에 비선형 페널티(`(planData / targetData)^1.5`)를 부여하여 `<100ms` 응답 속도와 추천 정합성을 동시에 확보.
 </details>
