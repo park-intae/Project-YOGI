@@ -4,8 +4,7 @@ import { getSessionId, yogiApi, apiClient } from './api';
 describe('api.ts', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.spyOn(Storage.prototype, 'getItem');
-    vi.spyOn(Storage.prototype, 'setItem');
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -90,15 +89,6 @@ describe('api.ts', () => {
       const result = await yogiApi.getRecommendationSummary('123');
       expect(result).toEqual(mockResponse);
       expect(apiClient.get).toHaveBeenCalledWith('/v1/recommendations/123/summary', { params: { dev_mode: false } });
-    });
-
-    it('getPlans', async () => {
-      const mockResponse = [{ id: 'plan1' }];
-      vi.spyOn(apiClient, 'get').mockResolvedValueOnce({ data: mockResponse });
-
-      const result = await yogiApi.getPlans({ min_price: 100 });
-      expect(result).toEqual(mockResponse);
-      expect(apiClient.get).toHaveBeenCalledWith('/v1/plans', { params: { min_price: 100 } });
     });
   });
 });

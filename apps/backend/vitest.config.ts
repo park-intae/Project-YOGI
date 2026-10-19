@@ -8,6 +8,19 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['src/**/*.{test,spec}.ts', '../../antigravity/**/*.{test,spec}.ts', 'test/**/*.e2e-spec.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/**/*.spec.ts',
+        'src/**/*.module.ts',
+        'src/main.ts',
+        'src/run-crawler.ts',
+        'src/prisma/**',
+        'src/telemetry/ingest.ts',
+        'src/telemetry/transform.ts',
+      ],
+    },
   },
   plugins: [
     swc.vite({

@@ -39,7 +39,6 @@ import type {
   RecommendedPlanDto,
   RecommendationResponseDto,
   RecommendationSummaryDto,
-  PlanFilterParams,
 } from '@yogi/shared-types';
 
 export type {
@@ -50,7 +49,6 @@ export type {
   RecommendedPlanDto,
   RecommendationResponseDto,
   RecommendationSummaryDto,
-  PlanFilterParams,
 };
 
 
@@ -93,9 +91,4 @@ export const yogiApi = {
     });
     return response.data;
   },
-
-  getPlans: async (params?: PlanFilterParams): Promise<any[]> => {
-    const response = await apiClient.get<any[]>('/v1/plans', { params });
-    return response.data;
-  }
 };

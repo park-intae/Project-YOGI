@@ -105,12 +105,30 @@ describe('Recommendations API (e2e)', () => {
 
     it('GET /api/v1/recommendations/:id - 발급된 input_id로 결과 페칭', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/api/v1/recommendations/${inputId}`)
+        .get(`/api/v1/recommendations/${inputId}?dev_mode=true`)
         .set('X-Session-ID', sessionId)
         .expect(200);
 
       expect(response.body).toHaveProperty('recommended_plans');
       expect(Array.isArray(response.body.recommended_plans)).toBe(true);
+    });
+
+    it('GET /api/v1/recommendations/:id/summary - AI 추천 요약 페칭', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/recommendations/${inputId}/summary?dev_mode=true`)
+        .set('X-Session-ID', sessionId)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('ai_summary_comment');
+    });
+
+    it('GET /api/v1/recommendations/:id/more - 추가 추천 요금제 페칭', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/recommendations/${inputId}/more?excluded_ids=1,2&dev_mode=true`)
+        .set('X-Session-ID', sessionId)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('recommended_plans');
     });
   });
 

@@ -50,10 +50,3 @@ export interface RecommendationResponseDto {
 export interface RecommendationSummaryDto {
   ai_summary_comment: string;
 }
-
-export interface PlanFilterParams {
-  carrier_type?: string;
-  network_type?: string;
-  min_price?: number;
-  max_price?: number;
-}
