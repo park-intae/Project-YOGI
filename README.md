@@ -41,6 +41,18 @@
 
 본 프로젝트는 **Turborepo 모노레포(Monorepo)** 구조로 패키지와 애플리케이션이 효율적으로 관리됩니다.
 
+### 💡 기술 스택 선정 및 설계 배경 (Why Next.js + NestJS?)
+
+Project YOGI는 불특정 다수의 일반 소비자가 검색을 통해 유입되는 **B2C 비회원제 알뜰폰 추천 서비스**입니다. 이에 따라 **검색 엔진 최적화(SEO)**와 **비즈니스/AI 파이프라인의 안정적 분리**를 핵심 기준으로 아키텍처를 설계했습니다.
+
+- **Next.js (App Router · SSR/RSC) — SEO 및 초기 진입 경험 극대화**
+  - CSR(SPA) 구조는 초기 HTML이 비어 있어(`#root`) 검색 엔진 크롤러의 인덱싱과 소셜 공유(OG 태그)에 불리합니다.
+  - 이를 해결하기 위해 Next.js App Router의 **SSR(Server-Side Rendering)** 및 **RSC(React Server Components)**를 적용하여, 초기 진입 페이지([`page.tsx`](apps/frontend/src/app/page.tsx))의 메타데이터와 초기 HTML 마크업을 서버에서 완성해 즉시 내려주도록 설계하고, 인터랙션이 필요한 폼·결과 영역만 클라이언트 컴포넌트로 분리했습니다.
+  - [`layout.tsx`](apps/frontend/src/app/layout.tsx)의 Next.js `Metadata` API(title, description, keywords, Open Graph, Twitter Card)와 [`robots.ts`](apps/frontend/src/app/robots.ts), [`sitemap.ts`](apps/frontend/src/app/sitemap.ts)를 통해 검색 엔진 크롤링 및 색인 효율을 확보했습니다.
+- **NestJS — 도메인 로직 및 AI/데이터 파이프라인 분리**
+  - Next.js 서버가 렌더링과 SEO 계층에 집중할 수 있도록, 무거운 백엔드 책임(우체국 알뜰폰 데이터 수집·정규화, 다차원 정량 스코어링, PostgreSQL/Prisma 트랜잭션, Gemini AI 비동기 요약 파이프라인)은 모듈러 아키텍처를 갖춘 **NestJS**로 분리했습니다.
+  - 프론트엔드와 백엔드를 분리하면서도 `packages/shared-types`를 통해 DTO/타입을 공유하여 API 계약 일관성을 유지합니다.
+
 ```mermaid
 graph LR
     A[Frontend: apps/frontend] -->|API Call: /api/v1/recommendations| B[Backend: apps/backend]
